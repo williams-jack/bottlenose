@@ -143,7 +143,7 @@ class JunitGrader < Grader
           URI.parse("#{orca_url}/api/v1/grader_images"),
           orca_image_build_config
         )
-        if body['errors'].nil?
+        if body['errors'].blank?
           message = body['message']
         else
           message = "Encountered the following errors when pushing image build to Orca:\n"
@@ -471,13 +471,11 @@ class JunitGrader < Grader
       break if attempts == max_requests
       sleep(2**attempts + rand)
     end
-    if response.code.to_i != 200
-      body = JSON.parse(response.body)
-      status = { response_code: response.code.to_i }
-      return body['errors'] ? { errors: body['errors'], **status } : status
-    else
-      return JSON.parse(response.body)['status']
+    body = JSON.parse(response.body)
+    unless response.code.to_i == 200
+      return { response_code: response.code.to_i, errors: body['errors'] }.compact
     end
+    body['status']
   end
 
   def post_image_request_with_retry(orca_uri, image_build_req_body)
