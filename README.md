@@ -196,4 +196,4 @@ ensure that the Site URL is filled in, and click Save Settings.
 To connect Bottlenose to the [Orca](https://github.com/CodeGrade/orca) grading service, two values need to be set:
 
 1. Orca's Web API URL should be added to `config/orca.yml` under `site_url` -> `production` (see development url in that file for example).
-2. After generating an API key with Orca, that key value should be pasted into `Orca API Key` when visiting Bottlenose's 'Settings' page.
+2. After generating an API key with Orca, that key value should be pasted into `Orca API Key` when visiting Bottlenose's 'Settings' page. The hostname given to Orca during API key generation should match the `site_url` setting for Bottlenose.
