@@ -85,15 +85,20 @@ class JunitGrader < Grader
         secret, secret_file_path = generate_orca_secret!(grade.submission_grader_dir)
         Audit.log("Orca secret created.")
         status = send_job_to_orca(submission, secret)
-        save_orca_job_status grade, status
-        Audit.log("Sent job to Orca!")
+        if status[:response_code].nil?
+          save_orca_job_status grade, status
+          Audit.log("Sent job to Orca!")
+        else
+          FileUtils.rm(secret_file_path)
+          error_str = "Response Code: #{status[:response_code]}"
+          if status[:errors]
+            error_str << "\nErrors:\n#{status[:errors].join("\n")}"
+          end
+          Audit.log(error_str)
+          write_failed_job_result error_str, grade.orca_result_path
+        end
       rescue IOError => e
         error_str = "Failed to create secret for job; encountered the following: #{e}"
-        Audit.log(error_str)
-        write_failed_job_result(error_str, grade.orca_result_path)
-      rescue Net::HTTPError => e
-        FileUtils.rm(secret_file_path)
-        error_str = "Failed to send job to Orca; enountered the following: #{e}"
         Audit.log(error_str)
         write_failed_job_result(error_str, grade.orca_result_path)
       rescue StandardError => e
@@ -138,7 +143,13 @@ class JunitGrader < Grader
           URI.parse("#{orca_url}/api/v1/grader_images"),
           orca_image_build_config
         )
-        handle_image_build_attempt body['message'], status_code
+        if body['errors'].nil?
+          message = body['message']
+        else
+          message = "Encountered the following errors when pushing image build to Orca:\n"
+          message << body['errors'].join("\n")
+        end
+        handle_image_build_attempt message, status_code
       rescue StandardError => e
         handle_image_build_attempt e.message
       end
@@ -445,6 +456,7 @@ class JunitGrader < Grader
     attempts = 0
     while true
       http_obj = Net::HTTP.new(orca_uri.host, orca_uri.port)
+      http_obj.use_ssl = orca_uri.instance_of? URI::HTTPS
       response = http_obj.send_request(
         'PUT',
         orca_uri.path,
@@ -459,8 +471,13 @@ class JunitGrader < Grader
       break if attempts == max_requests
       sleep(2**attempts + rand)
     end
-    response.value
-    JSON.parse(response.body)['status']
+    if response.code.to_i != 200
+      body = JSON.parse(response.body)
+      status = { response_code: response.code.to_i }
+      return body['errors'] ? { errors: body['errors'], **status } : status
+    else
+      return JSON.parse(response.body)['status']
+    end
   end
 
   def post_image_request_with_retry(orca_uri, image_build_req_body)
