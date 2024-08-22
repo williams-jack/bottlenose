@@ -84,15 +84,15 @@ class JunitGrader < Grader
         FileUtils.rm grade.orca_result_path if grade.has_orca_output?
         secret, secret_file_path = generate_orca_secret!(grade.submission_grader_dir)
         Audit.log("Orca secret created.")
-        status = send_job_to_orca(submission, secret)
-        if status[:response_code].nil?
-          save_orca_job_status grade, status
+        put_response = send_job_to_orca(submission, secret)
+        if put_response['response_code'] == 200
+          save_orca_job_status grade, put_response['status']
           Audit.log("Sent job to Orca!")
         else
           FileUtils.rm(secret_file_path)
-          error_str = "Response Code: #{status[:response_code]}"
-          if status[:errors]
-            error_str << "\nErrors:\n#{status[:errors].join("\n")}"
+          error_str = "Response Code: #{put_response['response_code']}"
+          if put_response['errors']
+            error_str << "\nErrors:\n#{put_response['errors'].join("\n")}"
           end
           Audit.log(error_str)
           write_failed_job_result error_str, grade.orca_result_path
@@ -473,9 +473,9 @@ class JunitGrader < Grader
     end
     body = JSON.parse(response.body)
     unless response.code.to_i == 200
-      return { response_code: response.code.to_i, errors: body['errors'] }.compact
+      return { 'response_code' => response.code.to_i, 'errors' => body['errors'] }.compact
     end
-    body['status']
+    { 'response_code' => response.code.to_i, **body }
   end
 
   def post_image_request_with_retry(orca_uri, image_build_req_body)
