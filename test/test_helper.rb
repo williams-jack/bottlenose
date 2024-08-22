@@ -151,6 +151,7 @@ class ActionDispatch::IntegrationTest
 
   setup do
     DatabaseCleaner.clean
+    WebMock.allow_net_connect!
   end
 
   teardown do

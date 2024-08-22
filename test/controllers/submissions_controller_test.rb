@@ -33,7 +33,7 @@ class SubmissionsControllerTest < ActionController::TestCase
 
     assert_difference('Submission.count') do
       post :create, params: {
-        course_id: @cs101.id, 
+        course_id: @cs101.id,
         assignment_id: @hello.id,
         submission: {
           type: "FilesSub",
@@ -122,7 +122,7 @@ class SubmissionsControllerTest < ActionController::TestCase
     sign_in @john
 
     post :create, params: {
-      course_id: @cs101.id, 
+      course_id: @cs101.id,
       assignment_id: @hello.id,
       submission: {
         type: "FilesSub",
@@ -151,7 +151,7 @@ class SubmissionsControllerTest < ActionController::TestCase
     sign_in @john
 
     post :create, params: {
-      course_id: @cs101.id, 
+      course_id: @cs101.id,
       assignment_id: @hello.id,
       submission: {
         type: "FilesSub",
@@ -233,7 +233,7 @@ class SubmissionsControllerTest < ActionController::TestCase
       points_available: 5)
 
     @sanity_ufu_john_sub = create(:submission, assignment: @sanity_ufu_asgn, user: @john, created_at: Time.current - 1.day)
-    
+
     sign_in @fred
 
     assert_not(UsedSub.exists?(submission: @sanity_ufu_john_sub))
@@ -262,14 +262,14 @@ class SubmissionsControllerTest < ActionController::TestCase
 
     @sanity_ev1_sarah_sub = create(:submission, assignment: @sanity_ev1_asgn, user: @sarah, team: @sanity_ev1_js_team,
                                     created_at: Time.current)
-    
+
     assert_not(UsedSub.exists?(submission: @sanity_ev1_sarah_sub))
 
     sign_in @fred
 
     post :use_for_everyone, params: {
       course_id: @cs101.id,
-      assignment_id: @sanity_ev1_asgn.id, 
+      assignment_id: @sanity_ev1_asgn.id,
       id: @sanity_ev1_sarah_sub.id
     }
 
