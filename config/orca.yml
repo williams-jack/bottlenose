@@ -4,4 +4,4 @@ queue:
 
 site_url:
   development: http://localhost:4000
-  test: http://invalid
+  test: http://orca.com.invalid
