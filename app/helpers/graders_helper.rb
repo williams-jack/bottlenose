@@ -1,7 +1,7 @@
 require 'sub_tarball'
 
 module GradersHelper
-  protected 
+  protected
   def run_command_produce_tap(assignment, sub, timeout: Grader::DEFAULT_GRADING_TIMEOUT)
     g = self.grade_for sub
     u = sub.upload
@@ -180,8 +180,8 @@ module GradersHelper
     # or creates them if only sources are submitted
     # to.join("src").mkpath
     # to.join("test").mkpath
-    
-    if Dir.exists?(from.join("src")) && Dir.exists?(from.join("test"))
+
+    if Dir.exist?(from.join("src")) && Dir.exist?(from.join("test"))
       Audit.log("#{prefix}From = #{from} and contains src/ and test/")
       # FileUtils.cp_r("#{from.join('src')}/.", "#{to.join('src')}/")
       # FileUtils.cp_r("#{from.join('test')}/.", "#{to.join('test')}/")
@@ -196,16 +196,16 @@ module GradersHelper
 
   def prepare_build_dir(prefix, dest, grader_path, sub_path, assets)
     Audit.log("#{prefix}: Preparing destination #{dest}")
-    if (Dir.exists?(grader_path.join("starter")) &&
-        Dir.exists?(grader_path.join("testing")))
+    if (Dir.exist?(grader_path.join("starter")) &&
+        Dir.exist?(grader_path.join("testing")))
       copy_srctest_from_to(grader_path.join("starter"), dest, prefix)
     end
     copy_srctest_from_to(sub_path, dest, prefix)
     assets.each do |asset|
       FileUtils.cp(asset, dest)
     end
-    if (Dir.exists?(grader_path.join("starter")) &&
-        Dir.exists?(grader_path.join("testing")))
+    if (Dir.exist?(grader_path.join("starter")) &&
+        Dir.exist?(grader_path.join("testing")))
       copy_srctest_from_to(grader_path.join("testing"), dest, prefix)
     else
       copy_srctest_from_to(grader_path, dest, prefix)
@@ -237,7 +237,7 @@ module GradersHelper
         f.write(file.read)
       end
       ArchiveUtils.extract(saved, file.content_type, tmpdir, force_readable: true)
-      if Dir.exists?("#{tmpdir}/assignment_#{self.assignment_id}")
+      if Dir.exist?("#{tmpdir}/assignment_#{self.assignment_id}")
         entries = Dir.glob("#{tmpdir}/assignment_#{self.assignment_id}/*")
       elsif Dir.glob("#{tmpdir}/assignment_*").length > 0
         ans[:errors] << "Found a directory that appears to be for a different assignment; is this the wrong upload?"
@@ -286,7 +286,7 @@ module GradersHelper
                 else
                   raw_tap = raw_tap.gsub(/(\s+filename:\s+\")/, "\\1#{sub_extracted_path}/")
                   tap = TapParser.new(raw_tap)
-                  
+
                   File.open(grader_dir.join(File.basename(file)), "w") do |tap_out|
                     tap_out.write raw_tap
                     g.grading_output_path = tap_out.path

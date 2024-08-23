@@ -38,9 +38,14 @@ class JunitGraderTest < ActiveSupport::TestCase
     @junit_grader.errors_to_show = 3
     @junit_grader.test_timeout = 10
 
+    def @junit_grader.autograde?; false end
+
     @asgn.graders << @junit_grader
     @asgn.save!
     sleep 0.1
+  end
+
+  setup do
   end
 
   def submission_grade_creation
