@@ -518,10 +518,11 @@ class JunitGrader < Grader
     # A JUnit Grader's test classes are dynamic, thus why we load in the partial script and
     # append the tap runner at the end.
     build_script = JSON.load(File.open(Rails.root.join("lib/assets/orca-grading-scripts/junit_grader.json")))
+    # NOTE(Ben): Temporary fix to patch in Examplar support here, without duplicating code
+    cmdargs = get_command_arguments(nil, nil)
+    cmd = cmdargs[2]
     build_script << {
-      cmd: ["java", "-cp", "junit-4.13.2.jar:junit-tap.jar:hamcrest-core-1.3.jar:annotations.jar:.:./*",
-        "edu.neu.TAPRunner", *(self.test_class.split(" ")),
-        "-timeout", self.test_timeout.to_s],
+      cmd: cmd,
       on_complete: "output",
       timeout: 360,
       working_dir: "$BUILD"
