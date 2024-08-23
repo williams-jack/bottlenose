@@ -128,6 +128,13 @@ class ActiveSupport::TestCase
       end
     end
   end
+
+  setup do
+    mock_build_response = { message: 'this grader already exists on the server; no build needed.' }.to_json
+    push_build_request_url = "#{Grader.orca_config['site_url']['test']}/api/v1/grader_images"
+    stub_request(:post, push_build_request_url)
+      .to_return(body: mock_build_response, status: 200, headers: { 'content-type' => 'application/json' })
+  end
 end
 
 class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
