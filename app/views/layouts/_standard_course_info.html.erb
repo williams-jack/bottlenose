@@ -41,7 +41,7 @@
 
         <% if cur_reg %>
             <p>
-                You are a
+                You are <%= cur_reg.role.starts_with?('a', 'e', 'i', 'o', 'u') ? 'an' : 'a' %>
                 <strong><%= cur_reg.role %></strong>
                 of this course.
             </p>
