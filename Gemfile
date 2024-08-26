@@ -1,7 +1,7 @@
 # -*- ruby -*-
 source 'https://rubygems.org'
 
-gem 'rails', '~> 7.0'
+gem 'rails', '~> 7.0.6'
 gem 'rack'
 gem 'i18n'
 gem 'net-http'
