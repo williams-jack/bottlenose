@@ -33,12 +33,12 @@ class JunitGraderTest < ActiveSupport::TestCase
 
     junit_upload = build(:upload, user: @fred, assignment: @asgn)
     junit_upload.upload_data = FakeUpload.new(Rails.root.join('test/fixtures/files/junit-example.zip').to_s)
-    @junit_grader = JunitGrader.new(assignment: @asgn, upload: junit_upload, avail_score: 50, order: 1)
+    @junit_grader = JunitGrader.new(assignment: @asgn, upload: junit_upload, avail_score: 50, order: 1, orca_status: true)
     @junit_grader.test_class = 'ExampleTestClass'
     @junit_grader.errors_to_show = 3
     @junit_grader.test_timeout = 10
 
-    def @junit_grader.autograde?; false end
+    def @junit_grader.autograde?; false end # to prevent Backburner kicking in
 
     @asgn.graders << @junit_grader
     @asgn.save!
