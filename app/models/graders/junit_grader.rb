@@ -8,7 +8,6 @@ require 'java_grader_file_processor'
 
 class JunitGrader < Grader
   after_initialize :load_junit_params
-  after_create :send_build_request_to_orca
   after_save :process_grader_zip
   before_validation :set_junit_params
   validate :proper_configuration
@@ -73,110 +72,6 @@ class JunitGrader < Grader
   end
   def import_data_schema
     "junit_import_schema"
-  end
-
-  def grade(assignment, submission, prio = 0)
-    Thread.new do
-      grade = grade_for submission
-      grade.submission_grader_dir.mkpath
-      Audit.log("Attempting to send job to Orca.")
-      begin
-        FileUtils.rm grade.orca_result_path if grade.has_orca_output?
-        secret, secret_file_path = generate_orca_secret!(grade.submission_grader_dir)
-        Audit.log("Orca secret created.")
-        put_response = send_job_to_orca(submission, secret)
-        if put_response['response_code'] == 200
-          save_orca_job_status grade, put_response['status']
-          Audit.log("Sent job to Orca!")
-        else
-          FileUtils.rm(secret_file_path)
-          error_str = "Response Code: #{put_response['response_code']}"
-          if put_response['errors']
-            error_str << "\nErrors:\n#{put_response['errors'].join("\n")}"
-          end
-          Audit.log(error_str)
-          write_failed_job_result error_str, grade.orca_result_path
-        end
-      rescue IOError => e
-        error_str = "Failed to create secret for job; encountered the following: #{e}"
-        Audit.log(error_str)
-        write_failed_job_result(error_str, grade.orca_result_path)
-      rescue StandardError => e
-        FileUtils.rm(secret_file_path) if File.exist? secret_file_path
-        error_str = "Unexpected error while attempting to create and send job to Orca; enountered the following: #{e}"
-        Audit.log(error_str)
-        write_failed_job_result(error_str, grade.orca_result_path)
-      end
-    end
-    super(assignment, submission, prio)
-  end
-
-  def send_job_to_orca(submission, secret)
-    orca_url = Grader.orca_config['site_url'][Rails.env]
-    job_json = JSON.generate(generate_grading_job(submission, secret))
-    put_job_json_with_retry!(URI.parse("#{orca_url}/api/v1/grading_queue"), job_json)
-  end
-
-  def generate_grading_job(sub, secret)
-    grade = grade_for sub
-    {
-      key: JSON.generate({ secret: secret }),
-      files: generate_files_hash(sub),
-      response_url: grade.orca_response_url,
-      script: get_grading_script,
-      metadata_table: generate_metadata_table(sub),
-      grader_image_sha: JunitGrader.dockerfile_sha_sum,
-      collation: sub.team ? { id: sub.team.id.to_s, type: "team" } :
-      { id: sub.user.id.to_s, type: "user" },
-      priority: delay_for_sub(sub).in_seconds
-    }
-  end
-
-  def send_build_request_to_orca
-    Thread.new do
-      begin
-        if File.exist? orca_build_result_path
-          FileUtils.remove_file orca_build_result_path
-        end
-        orca_url = Grader.orca_config['site_url'][Rails.env]
-        body, status_code = post_image_request_with_retry(
-          URI.parse("#{orca_url}/api/v1/grader_images"),
-          orca_image_build_config
-        )
-        if body['errors'].blank?
-          message = body['message']
-        else
-          message = "Encountered the following errors when pushing image build to Orca:\n"
-          message << body['errors'].join("\n")
-        end
-        handle_image_build_attempt message, status_code
-      rescue StandardError => e
-        handle_image_build_attempt e.message
-      end
-    end
-  end
-
-  def orca_image_build_config
-    url_helpers = Rails.application.routes.url_helpers
-    response_url = "#{Settings['site_url']}/#{url_helpers.orca_response_api_grader_path(self)}"
-    dockerfile_contents = File.read(JunitGrader.dockerfile_path)
-    sha_sum = Digest::SHA256.hexdigest dockerfile_contents
-    {
-      dockerfile_contents: dockerfile_contents,
-      dockerfile_sha_sum: sha_sum,
-      response_url: response_url
-    }
-  end
-
-  def handle_image_build_attempt(message, status_code=nil)
-    return if status_code == 200 && message == 'OK'
-    build_result = {
-      was_successful: status_code == 200,
-      logs: [message]
-    }
-    File.open(orca_build_result_path, 'w') do |f|
-      f.write JSON.generate(build_result)
-    end
   end
 
   def check_for_malformed_submission(upload)
@@ -421,86 +316,6 @@ class JunitGrader < Grader
   end
 
   # Orca grading job methods.
-
-  # Generates a secret to be paired with an Orca grading job
-  # and compared upon response. Returns the secret and the
-  # file_path to which it was saved.
-  def generate_orca_secret!(secret_save_dir)
-    secret_length = 32
-    secret = SecureRandom.hex(secret_length)
-    file_path = secret_save_dir.join("orca.secret")
-    File.open(file_path, "w") do |secret_file|
-      secret_file.write(secret)
-    end
-    [secret, file_path]
-  end
-
-  def write_failed_job_result(error_str, result_path)
-    result = generate_failed_job_result(error_str)
-    File.open(result_path, 'w') do |f|
-      f.write(result.to_json)
-    end
-  end
-
-  def generate_failed_job_result(error_str)
-    {
-      type: "GradingJobResult",
-      shell_responses: [],
-      errors: [error_str]
-    }
-  end
-
-  def put_job_json_with_retry!(orca_uri, job_json)
-    # Exponential back off variables. Wait time in ms.
-    max_requests = 5
-    attempts = 0
-    while true
-      http_obj = Net::HTTP.new(orca_uri.host, orca_uri.port)
-      http_obj.use_ssl = orca_uri.instance_of? URI::HTTPS
-      response = http_obj.send_request(
-        'PUT',
-        orca_uri.path,
-        job_json,
-        {
-          'Content-Type' => 'application/json',
-          'x-api-key' => Settings['orca_api_key']
-        }
-      )
-      break unless should_retry_web_request? response.code.to_i
-      attempts += 1
-      break if attempts == max_requests
-      sleep(2**attempts + rand)
-    end
-    body = JSON.parse(response.body)
-    unless response.code.to_i == 200
-      return { 'response_code' => response.code.to_i, 'errors' => body['errors'] }.compact
-    end
-    { 'response_code' => response.code.to_i, **body }
-  end
-
-  def post_image_request_with_retry(orca_uri, image_build_req_body)
-    max_requests = 5
-    attempts = 0
-    while true
-      response = Net::HTTP.post(
-        orca_uri,
-        JSON.generate(image_build_req_body),
-        {
-          'Content-Type' => 'application/json',
-          'x-api-key' => Settings['orca_api_key']
-        }
-      )
-      break unless should_retry_web_request? response.code.to_i
-      attempts += 1
-      break if attempts == max_requests
-      sleep(2**attempts + rand)
-    end
-    [JSON.parse(response.body), response.code.to_i]
-  end
-
-  def should_retry_web_request?(status_code)
-    [503, 504].include? status_code
-  end
 
   def generate_files_hash(sub)
     files = {
