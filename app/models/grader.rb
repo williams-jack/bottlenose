@@ -411,7 +411,7 @@ class Grader < ApplicationRecord
   def send_job_to_orca(submission, secret)
     orca_url = Grader.orca_config['site_url'][Rails.env]
     job_json = JSON.generate(generate_grading_job(submission, secret))
-    put_job_json_with_retry!(URI.parse("#{orca_url/v1/grading_queue"), job_json)
+    put_job_json_with_retry!(URI.parse("#{orca_url}/v1/grading_queue"), job_json)
   end
 
   def generate_grading_job(sub, secret)
