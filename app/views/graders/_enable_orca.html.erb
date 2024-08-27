@@ -8,20 +8,19 @@
   <% if f.object.orca_status  %>
     <% if f.object.has_orca_build_result? %>
       <% build_status = f.object.orca_build_result['was_successful'] ? 'Completed' : 'Failed' %>
+      <% status_style = f.object.orca_build_result['was_successful'] ? 'text-success' : 'text-danger' %>
+    <% elsif f.object.upload.blank? %>
+      <% build_status = "Unknown" %>
+      <% status_style = 'text-danger' %>
     <% else %>
       <% build_status = "Pending" %>
+      <% status_style = 'text-warning' %>
     <% end %>
     <tr>
       <td><strong>Orca Grader Build</strong></td>
       <td>
-      <% if build_status == "Completed" %>
-        <span class="text-success">Completed</span>
-      <% elsif build_status == "Failed" %>
-        <span class="text-danger">Failed</span>
-      <% else %>
-        <span class="text-warning">Pending</span>
-      <% end %>
-      <% if build_status == "Pending" %>
+        <span class="<%= status_style %>"><%= build_status %></span>
+      <% if build_status == "Pending" || build_status == "Unknown" %>
         <br />
         <span id="<%= "orca-server-image-status-#{f.object.id}" %>"></span>
       <% end %>

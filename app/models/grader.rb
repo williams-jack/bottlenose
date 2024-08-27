@@ -179,7 +179,8 @@ class Grader < ApplicationRecord
   end
 
   def has_orca_build_result?
-    File.exist? orca_build_result_path
+    obrp = orca_build_result_path
+    obrp && File.exist?(orca_build_result_path)
   end
 
   def orca_build_result
@@ -188,6 +189,7 @@ class Grader < ApplicationRecord
   end
 
   def orca_build_result_path
+    return nil unless upload&.extracted_path
     File.join(upload.extracted_path, 'build_result.json')
   end
 

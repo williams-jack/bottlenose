@@ -7,8 +7,10 @@ module Api
       return head :missing if @grader.nil?
       return head :bad_request unless @grader.orca_status
 
-      File.open(@grader.orca_build_result_path, 'w') do |f|
-        f.write(JSON.generate(orca_build_result_body))
+      if @grader.orca_build_result_path
+        File.open(@grader.orca_build_result_path, 'w') do |f|
+          f.write(JSON.generate(orca_build_result_body))
+        end
       end
       head :ok
     end
