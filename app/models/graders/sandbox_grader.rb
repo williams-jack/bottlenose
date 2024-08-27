@@ -66,8 +66,8 @@ class SandboxGrader < Grader
 
   protected
 
-  def get_grading_script
-    File.read(self.upload.extracted_files["grading_script.json"].full_path)
+  def get_grading_script(sub)
+    build_script = JSON.load(File.open(self.upload.extracted_files["grading_script.json"].full_path))
   end
 
   def generate_files_hash(sub)
@@ -76,7 +76,7 @@ class SandboxGrader < Grader
         url: sub.upload.url,
         mime_type: sub.upload.read_metadata[:mimetype],
         should_replace_paths: false
-      }
+      },
       grader: {
         submission: self.upload.url,
         mime_type: self.upload.read_metadata[:mimetype],

@@ -163,6 +163,10 @@ class Grader < ApplicationRecord
     File.join grade.submission_grader_dir, 'job_status.json'
   end
 
+  def orca_job_status_url
+    "#{Grader::orca_config["site_url"][Rails.env]}/api/v1/grader_images/status/#{dockerfile_sha_sum}  "
+  end
+  
   def orca_job_status_for(grade)
     return nil unless File.exist? orca_job_status_path(grade)
     JSON.parse(File.read(orca_job_status_path(grade)))
@@ -408,6 +412,10 @@ class Grader < ApplicationRecord
     fail NotImplementedError, "Each grader should implement this"
   end
 
+  def dockerfile_sha_sum
+    fail NotImplementedError, "Each grader should implement this"
+  end
+
   def send_job_to_orca(submission, secret)
     orca_url = Grader.orca_config['site_url'][Rails.env]
     job_json = JSON.generate(generate_grading_job(submission, secret))
@@ -416,15 +424,17 @@ class Grader < ApplicationRecord
 
   def generate_grading_job(sub, secret)
     grade = grade_for sub
+    collation = if sub.team
+                then { id: sub.team.id.to_s, type: "team" }
+                else { id: sub.user.id.to_s, type: "user" } end
     {
       key: JSON.generate({ secret: secret }),
       files: generate_files_hash(sub),
       response_url: grade.orca_response_url,
-      script: get_grading_script,
+      script: get_grading_script(sub),
       metadata_table: generate_metadata_table(sub),
-      grader_image_sha: JunitGrader.dockerfile_sha_sum,
-      collation: sub.team ? { id: sub.team.id.to_s, type: "team" } :
-      { id: sub.user.id.to_s, type: "user" },
+      grader_image_sha: dockerfile_sha_sum,
+      collation: collation,
       priority: delay_for_sub(sub).in_seconds
     }
   end

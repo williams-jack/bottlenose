@@ -27,6 +27,10 @@ class JunitGrader < Grader
     Digest::SHA256.hexdigest(File.read(JunitGrader.dockerfile_path))
   end
 
+  def dockerfile_sha_sum
+    JunitGrader.dockerfile_sha_sum
+  end
+
   def autograde?
     true
   end
@@ -100,13 +104,6 @@ class JunitGrader < Grader
       end
     end
     errors
-  end
-
-  def create_image_build_config
-    save_dir = upload.grader_path(self)
-    File.open(save_dir.join('image-config.json'), 'w') do |f|
-      f.write(image_build_config)
-    end
   end
 
   protected
@@ -343,7 +340,7 @@ class JunitGrader < Grader
     files
   end
 
-  def get_grading_script
+  def get_grading_script(sub)
     # NOTE: the JSON script from lib/assets contains everything that we know to be static, i.e., the build steps.
     # A JUnit Grader's test classes are dynamic, thus why we load in the partial script and
     # append the tap runner at the end.

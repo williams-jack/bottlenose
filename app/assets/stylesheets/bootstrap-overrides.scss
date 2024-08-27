@@ -6,3 +6,23 @@ table.no-first-row > tbody > tr:first-child > td,
 table.no-first-row > tfoot > tr:first-child > td {
    border-top: 0px solid white;
    }
+
+.modal-dialog-scrollable,
+.modal-dialog-scrollable .modal-content {
+  max-height: calc(100vh - 3.5rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-dialog-scrollable .modal-content {
+  overflow: hidden;
+}
+
+.modal-dialog-scrollable .modal-header {
+  margin-bottom: 0;
+}
+
+.modal-dialog-scrollable .modal-body {
+  overflow-y: auto;
+  flex: 1 1 auto;
+}

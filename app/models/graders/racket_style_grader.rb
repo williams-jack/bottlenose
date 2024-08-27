@@ -86,4 +86,68 @@ class RacketStyleGrader < Grader
     # we already compute the score here based on the TAP output
   end
 
+  @@resource_files = {
+    "lib/assets/checkstyle.rkt": ["checkstyle-rkt", "scheme", false],
+    "lib/assets/check-spacing.rkt": ["check-spacing-rkt", "scheme", false],
+    "lib/assets/linter.rkt": ["linter-rkt", "scheme", false],
+    "lib/assets/render-racket.rkt": ["render-racket-rkt", "scheme", false],
+    "lib/assets/retab.rkt": ["retab-rkt", "scheme", false],
+  }
+  
+  def generate_files_hash(sub)
+    files = {
+      submission: {
+        url: sub.upload.url,
+        mime_type: sub.upload.read_metadata[:mimetype],
+        should_replace_paths: false
+      },
+      grader: {
+        submission: self.upload.url,
+        mime_type: self.upload.read_metadata[:mimetype],
+        should_replace_paths: false
+      }
+    }
+
+    @@resource_files.each do |file_path, (files_key, mime, should_replace_paths)|
+      files[files_key] = {
+        url: "#{Settings['site_url']}/resources/#{file_path.to_s.gsub('lib/assets/', '')}",
+        mime_type: mime,
+        should_replace_paths: should_replace_paths
+      }
+    end
+    files
+  end
+
+  def get_grading_script(sub)
+    build_script_str = File.read(Rails.root.join('lib/assets/orca-grading-scripts/racket_style_grader.json'))
+    build_script_str.gsub!("$MAX_POINTS", self.avail_score.to_s)
+    build_script_str.gsub!("$LINE_WIDTH", self.line_length.to_s)
+    build_script = JSON.read(build_script_str)
+
+    # Duplicated code for now, compared to get_command_arguments
+    build_script << {
+      cmd: [
+       "env", "-u", "XDG_RUNTIME_DIR", 
+       "xvfb-run", "racket", "checkstyle.rkt",
+       "--max-points", "$MAX_POINTS",
+       "--line-width", "$LINE_WIDTH",
+       "$EXTRACTED/submission/"
+      ],
+      on_complete: "output",
+      timeout: 360,
+      working_dir: "$BUILD"
+    }
+  end
+    
+      
+  def self.dockerfile_path
+    Rails.root.join 'lib/assets/dockerfiles/racket-grader.Dockerfile'
+  end
+  def self.dockerfile_sha_sum
+    Digest::SHA256.hexdigest(File.read(RacketGrader.dockerfile_path))
+  end
+  def dockerfile_sha_sum
+    RacketGrader.dockerfile_sha_sum
+  end
+  
 end

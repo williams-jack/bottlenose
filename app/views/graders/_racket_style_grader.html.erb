@@ -12,4 +12,5 @@
     <td class="col-sm-4"><%= f.spinner "line_length", f.object.line_length || f.object.default_line_length, :min => 0 %></td>
     <td></td>
   </tr>
+  <%= render partial: "graders/enable_orca", locals: { f: f } %>
 </table>

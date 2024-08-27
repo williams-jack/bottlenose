@@ -1,0 +1,98 @@
+<div class="row">
+  <div class="col-sm-12">
+    <div id="sandbox-schema" class="fade modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+          <div class="modal-header alert alert-info">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Checker Grader Schema</h4>
+          </div>
+          <div class="modal-body">
+            <ul>
+              <li>BLAH</li>
+              <li>The Sandbox grader accepts archive files (tar, zip, or tar.gz)</li>
+              <li>The archive file must contain the following two
+              files at minimum:
+                <ul>
+                  <li><code>Dockerfile</code></li>
+                  <li><code>grading_script.json</code></li>
+                </ul>
+              </li>
+              <li>The <code>grading_script.json</code> file must
+                contain an array of <em>commands</em>.  The script
+                runs through each command in sequence, unless the
+                commands specify an alternate control flow.  Every
+                command may optionally have a <code>label</code> to be
+                referenced from other commands.
+                <ul>
+                  <li>A <em>script command</em> looks like
+                    <pre>{
+  "cmd": string | string[],
+  "on_complete"?: string | number | command[],
+  "on_fail"?: string | number | command[],
+  "working_dir"?: string,
+  "label"?: string,
+  "timeout"?: number
+}</pre>
+                    <p>The <code>cmd</code> argument is either a
+                      single command line, or a pre-parsed array of a
+                      program and its arguments.  Executing the former
+                      requires shell execution; the latter directly
+                      executs the requested program.</p>
+                    <p>If specified, the <code>working_dir</code>
+                      directory specifies what working directory will be
+                      used for this command.  If unspecified, the
+                      grading script begins in a temporary directory
+                      containing <code>$DOWNLOAD</code>, <code>$EXTRACTED/</code>
+                      and <code>$BUILD</code> subdirectories.
+                    <p>The <code>on_complete</code> and <code>on_fail</code>
+                      labels allow for early termination of the grading
+                      script or to skip over unnecessary steps.  They
+                      can refer to another command in the current array
+                      by index or by label, or by specifying another
+                      sublist of commands to run.</p>
+                  </li>
+                  <li>A <em>conditional command</em> looks like
+                    <pre>{
+  "condition": {
+     "predicate": "exists" | "file" | "dir",
+     "path": string
+  },
+  "on_true"?: string | number | command[],
+  "on_false"?: string | number | command[],
+  "label"?: string
+}</pre>
+                    These commands allow checking for the existence of
+                    a file or directory (or both).
+                    The <code>on_true</code> and <code>on_false</code> 
+                    labels define the control flow based on that predicate.  They
+                    can refer to another command in the current array
+                    by index or by label, or by specifying another
+                    sublist of commands to run.
+                  </li>
+                </ul>
+              </li>
+              <li>
+                There are three special command labels that can be
+                used in the <code>on_*</code> fields:
+                <ol>
+                  <li><code>next</code> indicates run the next command
+                    in the current array of commands (this is the
+                    default behavior for <code>on_success</code>)</li>
+                  <li><code>output</code> indicates the grading script
+                    should complete successfully here.</li>
+                  <li><code>abort</code> indicates the grading script
+                    should terminate abnormally here (this is the
+                    default behavior for <code>on_fail</code>).</li>
+                </ol>
+              </li>
+              <li>All other files in the uploaded archive will be
+                copied to a <code>$EXTRACTED/grader/</code> directory.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

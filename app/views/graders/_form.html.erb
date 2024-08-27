@@ -43,11 +43,13 @@
           <%= render 'graders/manual_grader', f: f %>
         </div>
       </div>
+      <% if current_user.site_admin? %>
       <div data-tab="SandboxGrader" class="tab-pane">
         <div class="form-group" style="margin-bottom: 0;">
           <%= render 'graders/sandbox_grader', f: f %>
         </div>
       </div>
+      <% end %>
     </div>
   </div>
 </li>

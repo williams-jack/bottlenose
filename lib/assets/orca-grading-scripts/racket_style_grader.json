@@ -1,0 +1,36 @@
+[
+  { "cmd": ["cp", "$EXTRACTED/grader/*.rkt", "$BUILD/"] },
+  { "condition": { "predicate": "file", "path": "$BUILD/checkstyle.rkt" },
+    "on_true": [],
+    "on_false": [ {"cmd": ["cp", "$EXTRACTED/checkstyle-rkt/checkstyle.rkt", "$BUILD/"] } ]
+  },
+  { "condition": { "predicate": "file", "path": "$BUILD/check-spacing.rkt" },
+    "on_true": [],
+    "on_false": [ {"cmd": ["cp", "$EXTRACTED/check-spacing-rkt/check-spacing.rkt", "$BUILD/"] } ]
+  },
+  { "condition": { "predicate": "file", "path": "$BUILD/linter.rkt" },
+    "on_true": [],
+    "on_false": [ {"cmd": ["cp", "$EXTRACTED/linter-rkt/linter.rkt", "$BUILD/"] } ]
+  },
+  { "condition": { "predicate": "file", "path": "$BUILD/render-racket.rkt" },
+    "on_true": [],
+    "on_false": [ {"cmd": ["cp", "$EXTRACTED/render-racket-rkt/render-racket.rkt", "$BUILD/"] } ]
+  },
+  { "condition": { "predicate": "file", "path": "$BUILD/retab.rkt" },
+    "on_true": [],
+    "on_false": [ {"cmd": ["cp", "$EXTRACTED/retab-rkt/retab.rkt", "$BUILD/"] } ]
+  },
+  { "cmd": ["tree", "."] },
+  { 
+    "cmd": [
+       "env", "-u", "XDG_RUNTIME_DIR", 
+       "xvfb-run", "racket", "$EXTRACTED/checkstyle.rkt",
+       "--max-points", "$MAX_POINTS",
+       "--line-width", "$LINE_WIDTH",
+       "$BUILD/"
+     ],
+    "on_complete": "output",
+    "on_fail": "abort"
+  }
+]
+
