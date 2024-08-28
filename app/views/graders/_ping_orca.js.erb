@@ -1,0 +1,15 @@
+function pingOrca(statusID, url) {
+  if (!$(`#${statusID}`).length || url === '') {
+    return;
+  }
+  $.ajax({
+    url,
+    success: function (statusMessage) {
+      $(`#${statusID}`).text(statusMessage);
+    },
+    error: function (err) {
+      $(`#${statusID}`).text(`Could not get status; ${err.status} ${err.statusMessage}`);
+    },
+    dataType: 'json'
+  });
+}

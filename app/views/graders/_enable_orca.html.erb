@@ -11,12 +11,21 @@
       <td>
         <table>
         <% if f.object.orca_status %>
+          <% image_status_id = "orca-server-image-status-#{f.object.id}" %>
+          <% image_response_url = "#{f.object.orca_job_status_url}" %>
           <% build_status = f.object.orca_current_build_result_status %>
           <% status_style = if build_status == 'Completed' then 'text-success'
                             elsif build_status == 'Pending' then 'text-warning' else 'text-danger' end %>
           <tr><td>Current build status: <span class="<%= status_style %>"><%= build_status %></span></td></tr>
           <% if build_status == "Pending" || build_status == "Unknown" %>
-          <tr><td><span id="<%= "orca-server-image-status-#{f.object.id}" %>"></span></td></tr>
+          <tr>
+            <td>
+              <span id="<%= image_status_id %>">Refresh status</span>
+              <button type="button" id="btn-<%= image_status_id %>" class="btn btn-small btn-info">
+                <span class="glyphicon glyphicon-refresh" />
+              </button>
+            </td>
+          </tr>
           <% build_status = f.object.orca_last_build_result_status %>
           <% status_style = if build_status == 'Completed' then 'text-success'
                             elsif build_status == 'Pending' then 'text-warning' else 'text-danger' end %>
@@ -41,4 +50,10 @@
       <td></td>
     </tr>
   <% end %>
+<script>
+  $("#btn-<%= image_status_id %>").click((e) => {
+    e.stopImmediatePropagation();
+    pingOrca('<%= image_status_id %>', '<%= image_response_url %>')
+  });
+</script>
 <% end %>

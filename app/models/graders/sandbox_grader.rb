@@ -17,7 +17,7 @@ class SandboxGrader < Grader
   end
   def set_sandbox_params
     self.params = {
-      display_name: self.display_name
+      display_name: self.display_name,
       response_type: self.response_type
     }.to_json
   end
