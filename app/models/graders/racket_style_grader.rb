@@ -100,11 +100,6 @@ class RacketStyleGrader < Grader
         url: sub.upload.url,
         mime_type: sub.upload.read_metadata[:mimetype],
         should_replace_paths: false
-      },
-      grader: {
-        submission: self.upload.url,
-        mime_type: self.upload.read_metadata[:mimetype],
-        should_replace_paths: false
       }
     }
 

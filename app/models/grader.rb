@@ -532,7 +532,7 @@ class Grader < ApplicationRecord
           write_failed_job_result error_str, grade.orca_result_path
         end
       rescue IOError => e
-        error_str = "Failed to create secret for job #{config_details}; encountered the following: #{e}"
+        error_str = "Failed to create secret for job #{config_details}; encountered the following: #{e}\n#{e.backtrace.join('\n')}"
         Audit.log(error_str)
         write_failed_job_result(error_str, grade.orca_result_path)
       rescue StandardError => e

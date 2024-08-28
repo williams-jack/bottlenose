@@ -1,6 +1,6 @@
 $(function () {
   const statusID = '<%= "orca-server-image-status-#{f.object.id}" %>';
-  const url = '<%= "{f.object.becomes(SandboxGrader).orca_job_status_url}" %>';
+  const url = '<%= "#{f.object.becomes(SandboxGrader).orca_job_status_url}" %>';
   if (!$(`#${statusID}`).length) {
     return;
   }
