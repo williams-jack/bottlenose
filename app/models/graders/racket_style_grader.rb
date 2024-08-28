@@ -117,7 +117,7 @@ class RacketStyleGrader < Grader
     build_script_str = File.read(Rails.root.join('lib/assets/orca-grading-scripts/racket_style_grader.json'))
     build_script_str.gsub!("$MAX_POINTS", self.avail_score.to_s)
     build_script_str.gsub!("$LINE_WIDTH", self.line_length.to_s)
-    build_script = JSON.read(build_script_str)
+    build_script = JSON.parse(build_script_str)
 
     # Duplicated code for now, compared to get_command_arguments
     build_script << {
