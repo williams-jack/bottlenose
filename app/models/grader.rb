@@ -166,7 +166,7 @@ class Grader < ApplicationRecord
   def orca_job_status_url
     "#{Grader::orca_config["site_url"][Rails.env]}/api/v1/grader_images/status/#{dockerfile_sha_sum}  "
   end
-  
+
   def orca_job_status_for(grade)
     return nil unless File.exist? orca_job_status_path(grade)
     JSON.parse(File.read(orca_job_status_path(grade)))
@@ -182,7 +182,7 @@ class Grader < ApplicationRecord
 
   def build_result_status(status)
     return 'Unknown' if status.nil?
-    
+
     if status['completed'] && status['successful']
       'Completed'
     elsif status['completed'] && !status['successful']
@@ -194,7 +194,7 @@ class Grader < ApplicationRecord
     end
   end
   public
-  
+
   def orca_current_build_result_status
     build_result_status(self.orca_status.dig('current_build'))
   end
@@ -289,14 +289,13 @@ class Grader < ApplicationRecord
   end
 
   def grade_sync!(assignment, submission)
-    send_grading_request_to_orca(assignment, submission) if self.orca_status
-    
     ans = do_grading(assignment, submission)
     submission.compute_grade! if submission.grade_complete?
     ans
   end
 
   def grade(assignment, submission, prio = 0)
+    send_grading_request_to_orca(assignment, submission) if self.orca_status
     if autograde?
       GradingJob.enqueue self, assignment, submission, prio: 1000 + prio, ttr: 1200
     else
@@ -431,7 +430,7 @@ class Grader < ApplicationRecord
   # Note: this needs to be public since it's used from the GradersController
   def send_build_request_to_orca
     return unless self.orca_status
-    
+
     Thread.new do
       begin
         os = self.orca_status
@@ -510,7 +509,7 @@ class Grader < ApplicationRecord
   def send_grading_request_to_orca(assignment, submission)
     Thread.new do
       config_details = "(assn #{assignment.id}, sub #{submission.id}, grader #{self.id})"
-      
+
       grade = grade_for submission
       grade.submission_grader_dir.mkpath
       Audit.log("Attempting to send job #{config_details} to Orca.")
@@ -543,7 +542,7 @@ class Grader < ApplicationRecord
       end
     end
   end
-  
+
   def orca_image_build_config
     url_helpers = Rails.application.routes.url_helpers
     response_url = "#{Settings['site_url']}/#{url_helpers.orca_response_api_grader_path(self)}"
@@ -638,7 +637,7 @@ class Grader < ApplicationRecord
 
   # END ORCA SECTION
 
-  
+
   def delay_for_sub(sub)
     # Delay = 1 minute * # of subs (excluding given sub) in the last 15 minutes.
     delay_window = Grader.orca_config['queue']['delay_window_mins'].minutes
