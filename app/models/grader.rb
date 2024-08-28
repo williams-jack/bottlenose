@@ -449,11 +449,24 @@ class Grader < ApplicationRecord
           message = "Encountered the following errors when pushing image build to Orca:\n"
           message << body['errors'].join("\n")
         end
-        handle_image_build_attempt [message], (status_code == 200)
+        unless (message == "OK" && status_code == 200)
+          handle_image_build_attempt [message], (status_code == 200)
+        end
       rescue StandardError => e
         handle_image_build_attempt [e.message], false
       end
     end
+  end
+
+  def handle_image_build_attempt(logs, successful)
+    os = self.orca_status
+    os['current_build'] = {
+      completed: true,
+      successful: successful,
+      logs: logs,
+      build_time: DateTime.now
+    }
+    self.update(orca_status: os)
   end
 
   protected
@@ -541,17 +554,6 @@ class Grader < ApplicationRecord
       dockerfile_sha_sum: sha_sum,
       response_url: response_url
     }
-  end
-
-  def handle_image_build_attempt(logs, successful)
-    os = self.orca_status
-    os['current_build'] = {
-      completed: true,
-      successful: successful,
-      logs: logs,
-      build_time: DateTime.now
-    }
-    self.update(orca_status: os)
   end
 
   # Generates a secret to be paired with an Orca grading job
