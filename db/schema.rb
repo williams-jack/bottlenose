@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_25_235205) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_28_125219) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -93,7 +93,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_25_235205) do
     t.integer "assignment_id", null: false
     t.integer "extra_upload_id"
     t.boolean "extra_credit", default: false, null: false
-    t.boolean "orca_status", default: false, null: false
+    t.jsonb "orca_status", default: false, null: false
   end
 
   create_table "grades", force: :cascade do |t|
