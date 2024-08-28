@@ -178,19 +178,35 @@ class Grader < ApplicationRecord
     end
   end
 
-  def has_orca_build_result?
-    obrp = orca_build_result_path
-    obrp && File.exist?(orca_build_result_path)
-  end
+  private
 
-  def orca_build_result
-    return nil unless File.exist? orca_build_result_path
-    JSON.parse(File.read(orca_build_result_path))
+  def build_result_status(status)
+    if status[:completed] && status[:successful]
+      'Completed'
+    elsif status[:completed] && !status[:successful]
+      'Failed'
+    elsif !status[:completed]
+      'Pending'
+    else
+      'Unknown'
+    end
   end
-
-  def orca_build_result_path
-    return nil unless upload&.extracted_path
-    File.join(upload.extracted_path, 'build_result.json')
+  public
+  
+  def orca_current_build_result_status
+    build_result_status(self.orca_status.dig(:current_build))
+  end
+  def orca_last_build_result_status
+    build_result_status(self.orca_status.dig(:last_cbuild))
+  end
+  def orca_current_build_time
+    self.orca_status.dig(:current_build, :build_time)
+  end
+  def orca_last_build_time
+    self.orca_status.dig(:last_build, :build_time)
+  end
+  def latest_build_logs
+    self.orca_status.dig(:current_build, :logs) || self.orca_status.dig(:last_build, :logs)
   end
 
   def generate_grading_job(sub)
@@ -483,9 +499,10 @@ class Grader < ApplicationRecord
     
     Thread.new do
       begin
-        if File.exist? orca_build_result_path
-          FileUtils.remove_file orca_build_result_path
-        end
+        os = self.orca_status
+        os[:last_build] = os[:current_build]
+        os[:current_build] = { completed: false, successful: false, build_time: DateTime.now }
+        self.update(orca_status: os)
         orca_url = Grader.orca_config['site_url'][Rails.env]
         body, status_code = post_image_request_with_retry(
           URI.parse("#{orca_url}/api/v1/grader_images"),
@@ -497,9 +514,9 @@ class Grader < ApplicationRecord
           message = "Encountered the following errors when pushing image build to Orca:\n"
           message << body['errors'].join("\n")
         end
-        handle_image_build_attempt message, status_code
+        handle_image_build_attempt [message], true
       rescue StandardError => e
-        handle_image_build_attempt e.message
+        handle_image_build_attempt [e.message], false
       end
     end
   end
@@ -516,15 +533,15 @@ class Grader < ApplicationRecord
     }
   end
 
-  def handle_image_build_attempt(message, status_code=nil)
-    return if status_code == 200 && message == 'OK'
-    build_result = {
-      was_successful: status_code == 200,
-      logs: [message]
+  def handle_image_build_attempt(logs, successful)
+    os = self.orca_status
+    os[:current_build] = {
+      completed: true,
+      successful: successful,
+      logs: logs,
+      build_time: DateTime.now
     }
-    File.open(orca_build_result_path, 'w') do |f|
-      f.write JSON.generate(build_result)
-    end
+    self.update(orca_status: os)
   end
 
   # Generates a secret to be paired with an Orca grading job

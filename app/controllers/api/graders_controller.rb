@@ -7,11 +7,10 @@ module Api
       return head :missing if @grader.nil?
       return head :bad_request unless @grader.orca_status
 
-      if @grader.orca_build_result_path
-        File.open(@grader.orca_build_result_path, 'w') do |f|
-          f.write(JSON.generate(orca_build_result_body))
-        end
-      end
+      @grader.handle_image_build_attempt(
+        params[:logs].map { |l| l.permit!.to_h },
+        params[:was_successful]
+      )
       head :ok
     end
 
@@ -19,13 +18,6 @@ module Api
 
     def find_grader
       @grader = Grader.find_by_id params[:id]
-    end
-
-    def orca_build_result_body
-      {
-        was_successful: params[:was_successful],
-        logs: params[:logs].map { |l| l.permit!.to_h }
-      }
     end
   end
 end

@@ -9,12 +9,11 @@ class GradersController < ApplicationController
       return redirect_to course_assignment_path(@course, @assignment),
                          alert: 'This grader does not use Orca'
     end
-    build_result = @grader.orca_build_result
-    if build_result.nil?
+    @logs = @grader.latest_build_logs
+    if @logs.nil?
       return redirect_to course_assignment_path(@course, @assignment),
                          alert: 'This grader has no build logs from Orca'
     end
-    @logs = build_result['logs']
     render action: 'build_log'
   end
 
