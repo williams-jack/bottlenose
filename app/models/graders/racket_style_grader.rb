@@ -11,7 +11,7 @@ class RacketStyleGrader < Grader
   def display_type
     "Racket Style"
   end
-  
+
   def to_s
     if self.upload
       "#{self.avail_score} points: Run Racket style checker, using #{self.upload.file_name}"
@@ -40,24 +40,24 @@ class RacketStyleGrader < Grader
   def import_data_schema
     "tap_style_import_schema"
   end
-  
+
   protected
-  
+
   def do_grading(assignment, sub)
-    g = self.grade_for sub
-    Dir.mktmpdir("grade-#{sub.id}-#{g.id}_") do |tmpdir|
-      @tmpdir = tmpdir
-      sub.upload.extract_contents_to!(nil, Pathname.new(tmpdir))
-      Headless.ly(display: g.id % Headless::MAX_DISPLAY_NUMBER, autopick: true) do
-        run_command_produce_tap assignment, sub, timeout: Grader::DEFAULT_GRADING_TIMEOUT do |prefix, err, g, tap|
-          if err
-            record_compile_error(sub, g)
-          else
-            record_tap_as_comments(g, tap, sub)
-          end
-        end
-      end
-    end
+    # g = self.grade_for sub
+    # Dir.mktmpdir("grade-#{sub.id}-#{g.id}_") do |tmpdir|
+    #   @tmpdir = tmpdir
+    #   sub.upload.extract_contents_to!(nil, Pathname.new(tmpdir))
+    #   Headless.ly(display: g.id % Headless::MAX_DISPLAY_NUMBER, autopick: true) do
+    #     run_command_produce_tap assignment, sub, timeout: Grader::DEFAULT_GRADING_TIMEOUT do |prefix, err, g, tap|
+    #       if err
+    #         record_compile_error(sub, g)
+    #       else
+    #         record_tap_as_comments(g, tap, sub)
+    #       end
+    #     end
+    #   end
+    # end
   end
 
   def get_command_arguments(assignment, sub)
@@ -93,7 +93,7 @@ class RacketStyleGrader < Grader
     "lib/assets/render-racket.rkt": ["render-racket-rkt", "scheme", false],
     "lib/assets/retab.rkt": ["retab-rkt", "scheme", false],
   }
-  
+
   def generate_files_hash(sub)
     files = {
       submission: {
@@ -117,24 +117,10 @@ class RacketStyleGrader < Grader
     build_script_str = File.read(Rails.root.join('lib/assets/orca-grading-scripts/racket_style_grader.json'))
     build_script_str.gsub!("$MAX_POINTS", self.avail_score.to_s)
     build_script_str.gsub!("$LINE_WIDTH", self.line_length.to_s)
-    build_script = JSON.parse(build_script_str)
-
-    # Duplicated code for now, compared to get_command_arguments
-    build_script << {
-      cmd: [
-       "env", "-u", "XDG_RUNTIME_DIR", 
-       "xvfb-run", "racket", "checkstyle.rkt",
-       "--max-points", "$MAX_POINTS",
-       "--line-width", "$LINE_WIDTH",
-       "$EXTRACTED/submission/"
-      ],
-      on_complete: "output",
-      timeout: 360,
-      working_dir: "$BUILD"
-    }
+    JSON.parse(build_script_str)
   end
-    
-      
+
+
   def self.dockerfile_path
     Rails.root.join 'lib/assets/dockerfiles/racket-grader.Dockerfile'
   end
@@ -147,5 +133,5 @@ class RacketStyleGrader < Grader
   def dockerfile_path
     RacketStyleGrader.dockerfile_path
   end
-  
+
 end

@@ -1,5 +1,4 @@
 [
-  { "cmd": ["cp", "$EXTRACTED/grader/*.rkt", "$BUILD/"] },
   { "condition": { "predicate": "file", "path": "$BUILD/checkstyle.rkt" },
     "on_true": [],
     "on_false": [ {"cmd": ["cp", "$EXTRACTED/checkstyle-rkt/checkstyle.rkt", "$BUILD/"] } ]
@@ -20,17 +19,18 @@
     "on_true": [],
     "on_false": [ {"cmd": ["cp", "$EXTRACTED/retab-rkt/retab.rkt", "$BUILD/"] } ]
   },
-  { "cmd": ["tree", "."] },
-  { 
+  { "cmd": ["tree", "$EXTRACTED/.."] },
+  {
     "cmd": [
-       "env", "-u", "XDG_RUNTIME_DIR", 
-       "xvfb-run", "racket", "$EXTRACTED/checkstyle.rkt",
+       "env", "-u", "XDG_RUNTIME_DIR",
+       "xvfb-run", "racket", "$BUILD/checkstyle.rkt",
        "--max-points", "$MAX_POINTS",
        "--line-width", "$LINE_WIDTH",
-       "$BUILD/"
+       "$EXTRACTED/submission"
      ],
     "on_complete": "output",
-    "on_fail": "abort"
+    "on_fail": "abort",
+    "timeout": 360
   }
 ]
 
