@@ -427,6 +427,35 @@ class Grader < ApplicationRecord
     []
   end
 
+
+  # Note: this needs to be public since it's used from the GradersController
+  def send_build_request_to_orca
+    return unless self.orca_status
+    
+    Thread.new do
+      begin
+        os = self.orca_status
+        os['last_build'] = os['current_build']
+        os['current_build'] = { completed: false, successful: false, build_time: DateTime.now }
+        self.update(orca_status: os)
+        orca_url = Grader.orca_config['site_url'][Rails.env]
+        body, status_code = post_image_request_with_retry(
+          URI.parse("#{orca_url}/api/v1/grader_images"),
+          orca_image_build_config
+        )
+        if body['errors'].blank?
+          message = body['message']
+        else
+          message = "Encountered the following errors when pushing image build to Orca:\n"
+          message << body['errors'].join("\n")
+        end
+        handle_image_build_attempt [message], (status_code == 200)
+      rescue StandardError => e
+        handle_image_build_attempt [e.message], false
+      end
+    end
+  end
+
   protected
 
   # BEGIN ORCA SECTION
@@ -502,33 +531,6 @@ class Grader < ApplicationRecord
     end
   end
   
-  def send_build_request_to_orca
-    return unless self.orca_status
-    
-    Thread.new do
-      begin
-        os = self.orca_status
-        os['last_build'] = os['current_build']
-        os['current_build'] = { completed: false, successful: false, build_time: DateTime.now }
-        self.update(orca_status: os)
-        orca_url = Grader.orca_config['site_url'][Rails.env]
-        body, status_code = post_image_request_with_retry(
-          URI.parse("#{orca_url}/api/v1/grader_images"),
-          orca_image_build_config
-        )
-        if body['errors'].blank?
-          message = body['message']
-        else
-          message = "Encountered the following errors when pushing image build to Orca:\n"
-          message << body['errors'].join("\n")
-        end
-        handle_image_build_attempt [message], (status_code == 200)
-      rescue StandardError => e
-        handle_image_build_attempt [e.message], false
-      end
-    end
-  end
-
   def orca_image_build_config
     url_helpers = Rails.application.routes.url_helpers
     response_url = "#{Settings['site_url']}/#{url_helpers.orca_response_api_grader_path(self)}"
