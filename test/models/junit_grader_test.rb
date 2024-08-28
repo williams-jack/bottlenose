@@ -68,8 +68,8 @@ class JunitGraderTest < ActiveSupport::TestCase
       .to_return(body: mock_build_response, status: 200, headers: { 'content-type' => 'application/json' })
 
     assignment_creation
-    assert @junit_grader.orca_build_result['was_successful']
-    assert_equal @junit_grader.orca_build_result['logs'].first, message
+    assert @junit_grader.orca_status['current_build']['successful']
+    assert_equal @junit_grader.orca_status['current_build']['logs'].first, message
   end
 
   test 'receive bad request image build response' do
@@ -80,8 +80,8 @@ class JunitGraderTest < ActiveSupport::TestCase
       .to_return(body: mock_build_response, status: 400, headers: { 'content-type' => 'application/json' })
 
     assignment_creation
-    assert_not @junit_grader.orca_build_result['was_successful']
-    assert @junit_grader.orca_build_result['logs'].first.include?(errors.join("\n"))
+    assert_not @junit_grader.orca_status['current_build']['successful']
+    assert @junit_grader.orca_status['current_build']['logs'].first.include?(errors.join("\n"))
   end
 
   test 'receive successful job push response' do

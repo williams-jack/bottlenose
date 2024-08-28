@@ -160,7 +160,7 @@ class Grader < ApplicationRecord
   end
 
   def orca_job_status_path(grade)
-    File.join grade.submission_grader_dir, 'job_status.json'
+    File.join(grade.submission_grader_dir, 'job_status.json')
   end
 
   def orca_job_status_url
@@ -181,11 +181,13 @@ class Grader < ApplicationRecord
   private
 
   def build_result_status(status)
-    if status[:completed] && status[:successful]
+    return 'Unknown' if status.nil?
+    
+    if status['completed'] && status['successful']
       'Completed'
-    elsif status[:completed] && !status[:successful]
+    elsif status['completed'] && !status['successful']
       'Failed'
-    elsif !status[:completed]
+    elsif !status['completed']
       'Pending'
     else
       'Unknown'
@@ -194,19 +196,19 @@ class Grader < ApplicationRecord
   public
   
   def orca_current_build_result_status
-    build_result_status(self.orca_status.dig(:current_build))
+    build_result_status(self.orca_status.dig('current_build'))
   end
   def orca_last_build_result_status
-    build_result_status(self.orca_status.dig(:last_cbuild))
+    build_result_status(self.orca_status.dig('last_build'))
   end
   def orca_current_build_time
-    self.orca_status.dig(:current_build, :build_time)
+    self.orca_status.dig('current_build', 'build_time')
   end
   def orca_last_build_time
-    self.orca_status.dig(:last_build, :build_time)
+    self.orca_status.dig('last_build', 'build_time')
   end
   def latest_build_logs
-    self.orca_status.dig(:current_build, :logs) || self.orca_status.dig(:last_build, :logs)
+    self.orca_status.dig('current_build', 'logs') || self.orca_status.dig('last_build', 'logs')
   end
 
   def generate_grading_job(sub)
@@ -388,6 +390,12 @@ class Grader < ApplicationRecord
       self.upload = nil
     end
     attrs.delete :removefile
+    if attrs[:orca_status]
+      self.orca_status = self.orca_status || {
+        current_build: {completed: false, successful: false, build_time: DateTime.now}
+      }
+      attrs.delete :orca_status
+    end
     self.upload_by_user_id = attrs[:upload_by_user_id]
     self.assignment = attrs[:assignment] if self.assignment.nil? && attrs[:assignment]
     super(attrs)
@@ -500,8 +508,8 @@ class Grader < ApplicationRecord
     Thread.new do
       begin
         os = self.orca_status
-        os[:last_build] = os[:current_build]
-        os[:current_build] = { completed: false, successful: false, build_time: DateTime.now }
+        os['last_build'] = os['current_build']
+        os['current_build'] = { completed: false, successful: false, build_time: DateTime.now }
         self.update(orca_status: os)
         orca_url = Grader.orca_config['site_url'][Rails.env]
         body, status_code = post_image_request_with_retry(
@@ -514,7 +522,7 @@ class Grader < ApplicationRecord
           message = "Encountered the following errors when pushing image build to Orca:\n"
           message << body['errors'].join("\n")
         end
-        handle_image_build_attempt [message], true
+        handle_image_build_attempt [message], (status_code == 200)
       rescue StandardError => e
         handle_image_build_attempt [e.message], false
       end
@@ -535,7 +543,7 @@ class Grader < ApplicationRecord
 
   def handle_image_build_attempt(logs, successful)
     os = self.orca_status
-    os[:current_build] = {
+    os['current_build'] = {
       completed: true,
       successful: successful,
       logs: logs,

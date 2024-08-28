@@ -10,20 +10,20 @@
       <td><strong>Orca Grader Build</strong></td>
       <td>
         <table>
-          <% if f.object.orca_status %>
+        <% if f.object.orca_status %>
           <% build_status = f.object.orca_current_build_result_status %>
           <% status_style = if build_status == 'Completed' then 'text-success'
                             elsif build_status == 'Pending' then 'text-warning' else 'text-danger' end %>
-          <tr>Current build status: <span class="<%= status_style %>"><%= build_status %></span></tr>
+          <tr><td>Current build status: <span class="<%= status_style %>"><%= build_status %></span></td></tr>
           <% if build_status == "Pending" || build_status == "Unknown" %>
-          <tr><span id="<%= "orca-server-image-status-#{f.object.id}" %>"></span></tr>
+          <tr><td><span id="<%= "orca-server-image-status-#{f.object.id}" %>"></span></td></tr>
           <% build_status = f.object.orca_last_build_result_status %>
           <% status_style = if build_status == 'Completed' then 'text-success'
                             elsif build_status == 'Pending' then 'text-warning' else 'text-danger' end %>
-          <tr>Last build status: <span class="<%= status_style %>"><%= build_status %></span></tr>
+          <tr><td>Last build status: <span class="<%= status_style %>"><%= build_status %></span></td></tr>
           <% end %>
+        <% end %>
         </table>
-      <% end %>
       </td>
       <td>
         <% if f.object.orca_status %>
