@@ -149,5 +149,8 @@ class RacketStyleGrader < Grader
   def dockerfile_sha_sum
     RacketStyleGrader.dockerfile_sha_sum
   end
+  def dockerfile_path
+    RacketStyleGrader.dockerfile_path
+  end
   
 end

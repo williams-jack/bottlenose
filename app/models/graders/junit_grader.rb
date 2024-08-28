@@ -31,6 +31,10 @@ class JunitGrader < Grader
     JunitGrader.dockerfile_sha_sum
   end
 
+  def dockerfile_path
+    JunitGrader.dockerfile_path
+  end
+
   def autograde?
     true
   end

@@ -89,4 +89,12 @@ class SandboxGrader < Grader
     # Nothing to do, since Orca will handle it!
   end
 
+  def dockerfile_path
+    self.upload.extracted_files["Dockerfile"].full_path
+  end
+
+  def dockerfile_sha_sum
+    Digest::SHA256.hexdigest(File.read(dockerfile_path))
+  end
+
 end
