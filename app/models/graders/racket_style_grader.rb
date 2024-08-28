@@ -144,10 +144,10 @@ class RacketStyleGrader < Grader
     Rails.root.join 'lib/assets/dockerfiles/racket-grader.Dockerfile'
   end
   def self.dockerfile_sha_sum
-    Digest::SHA256.hexdigest(File.read(RacketGrader.dockerfile_path))
+    Digest::SHA256.hexdigest(File.read(RacketStyleGrader.dockerfile_path))
   end
   def dockerfile_sha_sum
-    RacketGrader.dockerfile_sha_sum
+    RacketStyleGrader.dockerfile_sha_sum
   end
   
 end

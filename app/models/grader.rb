@@ -534,8 +534,8 @@ class Grader < ApplicationRecord
   def orca_image_build_config
     url_helpers = Rails.application.routes.url_helpers
     response_url = "#{Settings['site_url']}/#{url_helpers.orca_response_api_grader_path(self)}"
-    dockerfile_contents = File.read(JunitGrader.dockerfile_path)
-    sha_sum = Digest::SHA256.hexdigest dockerfile_contents
+    dockerfile_contents = File.read(dockerfile_path)
+    sha_sum = dockerfile_sha_sum
     {
       dockerfile_contents: dockerfile_contents,
       dockerfile_sha_sum: sha_sum,
