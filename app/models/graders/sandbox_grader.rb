@@ -147,7 +147,7 @@ class SandboxGrader < Grader
                 submission: sub,
                 title: t['name'] || t['comment'] || '',
                 filename: Upload.upload_path_for(t['filename'] || sub.upload.extracted_path.to_s),
-                line: t['line'].to_i || i,
+                line: t['line']&.to_i || (i + 1),
                 grade: grade,
                 user: nil,
                 label: 'general',
