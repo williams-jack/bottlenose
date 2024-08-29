@@ -83,28 +83,8 @@ class SandboxGrader < Grader
     end
   end
 
-  protected
-
-  def get_grading_script(sub)
-    JSON.load(File.open(self.upload.extracted_files.to_h {|v| [v[:path], v[:full_path]]}["grading_script.json"]))
-  end
-
-  def generate_files_hash(sub)
-    files = {
-      submission: {
-        url: sub.upload.url,
-        mime_type: sub.upload.read_metadata[:mimetype],
-        should_replace_paths: false
-      },
-      grader: {
-        url: self.upload.url,
-        mime_type: self.upload.read_metadata[:mimetype],
-        should_replace_paths: false
-      }
-    }
-  end
-
-  def postprocess_orca_response(grade, response)
+    def postprocess_orca_response(grade, response)
+    Audit.log("In SandboxGrader(#{self.id}).postprocess_orca_response(#{grade.id}, #{response.inspect})"
     sub = grade.submission
     prefix = "Assignment #{assignment.id}, submission #{sub.id}"
     if response['errors'].present?
@@ -163,6 +143,7 @@ class SandboxGrader < Grader
             InlineComment.import ics
           end
         when "plaintext"
+          Audit.log("Not yet implemented: plaintext response for SandboxGrader(#{self.id}).postprocess_orca_response")
         end
       rescue Exception => e
         Audit.log("#{prefix}: #{self.response_type} error: #{e}")
@@ -170,6 +151,28 @@ class SandboxGrader < Grader
       end
     end
   end
+
+  protected
+
+  def get_grading_script(sub)
+    JSON.load(File.open(self.upload.extracted_files.to_h {|v| [v[:path], v[:full_path]]}["grading_script.json"]))
+  end
+
+  def generate_files_hash(sub)
+    files = {
+      submission: {
+        url: sub.upload.url,
+        mime_type: sub.upload.read_metadata[:mimetype],
+        should_replace_paths: false
+      },
+      grader: {
+        url: self.upload.url,
+        mime_type: self.upload.read_metadata[:mimetype],
+        should_replace_paths: false
+      }
+    }
+  end
+
   
   def do_grading(assignment, sub)
     # Nothing to do, since Orca will handle it!

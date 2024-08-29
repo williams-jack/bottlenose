@@ -23,6 +23,7 @@
   </tr>
   <%= render "graders/grader_file_picker", f: f, id: f.object.id.to_s,
       label: "Grading file:", schema: "sandbox-schema" %>
+  <%= render partial: "graders/enable_orca", locals: { f: f, force_orca: true } %>
   <!--
   <tr class="form-group">
     <td class="col-sm-2"><%= f.label "extra_upload_file", "Extra file:" %></td>

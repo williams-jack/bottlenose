@@ -1,10 +1,12 @@
 <% if current_user.site_admin? %>
+  <% if !local_assigns[:force_orca] %>
   <tr class="form-group">
     <td class="col-sm-4"><%= f.label "orca_status", "Use Orca? (Experimental: do not use yet!)" %></td>
     <td><%= f.check_box :orca_status, checked: !!f.object.orca_status,
       data: {toggle: "toggle", on: "Yes", off: "No"} %></td>
     <td></td>
   </tr>
+  <% end %>
   <% if f.object.orca_status  %>
     <tr>
       <td><strong>Orca Grader Build</strong></td>
