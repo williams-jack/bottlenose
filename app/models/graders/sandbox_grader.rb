@@ -110,7 +110,7 @@ class SandboxGrader < Grader
       end
     else
       output = response[:output]
-      output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path)
+      output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path.to_s)
       begin
         case self.response_type
         when "inline_comments", "checker_tests", "xunit_tests", "examplar"
