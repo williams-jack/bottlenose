@@ -127,7 +127,7 @@ class SandboxGrader < Grader
           grade.available = true
           grade.save!
           InlineComment.transaction do
-            InlincComment.where(submission: sub, grade: grade).destroy_all
+            InlineComment.where(submission: sub, grade: grade).destroy_all
             ics = json['tests'].map do |t|
               InlineComment.new(
                 submission: sub,
