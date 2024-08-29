@@ -553,7 +553,7 @@ class Grader < ApplicationRecord
         write_failed_job_result(error_str, grade.orca_result_path)
       rescue StandardError => e
         FileUtils.rm(secret_file_path) if File.exist? secret_file_path
-        error_str = "Unexpected error while attempting to create and send job #{config_details} to Orca; enountered the following: #{e}"
+        error_str = "Unexpected error while attempting to create and send job #{config_details} to Orca; enountered the following: #{e}\n#{e.backtrace.join('\n')}"
         Audit.log(error_str)
         write_failed_job_result(error_str, grade.orca_result_path)
       end
