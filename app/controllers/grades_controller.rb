@@ -959,11 +959,11 @@ HEADER
     redirect_to details_course_assignment_submission_path(@course, @assignment, @submission)
   end
   def show_SandboxGrader
-    if @grade.has_orca_output?
+    if @grade.grading_output
       case @grader.response_type
       when "inline_comments", "checker_tests", "xunit_tests", "examplar"
         begin
-          @grading_output = File.read(@grade.orca_result_path)
+          @grading_output = File.read(@grade.grading_output_path)
           begin
             tap = TapParser.new(@grading_output)
             @grading_output = tap
@@ -976,10 +976,10 @@ HEADER
           @tests = []
         end
       when "simple_list"
-        @grading_output = JSON.parse(File.read(@grade.orca_result_path))
-        @tests = @grading_output[:output]['tests']
+        @grading_output = JSON.parse(File.read(@grade.grading_output_path)
+        @tests = @grading_output['tests']
       when "plaintext"
-        @grading_output = File.read(@grade.orca_result_path)
+        @grading_output = File.read(@grade.grading_output_path)
         @tests = []
       end
     end
