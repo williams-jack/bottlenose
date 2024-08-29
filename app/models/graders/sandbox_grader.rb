@@ -9,6 +9,15 @@ class SandboxGrader < Grader
   before_validation :set_sandbox_params
   validate :proper_configuration
 
+  RESPONSE_TYPES = [
+    ["List of outputs", "simple_list"],
+    ["Plain text", "plaintext"],
+    ["Inline comments", "inline_comments"],
+    ["Checker tests", "checker_tests"],
+    ["xUnit tests", "xunit_tests"],
+    ["Examplar", "examplar"]
+  ]
+  
   def load_sandbox_params
     return if new_record?
     data = JSON.parse(self.params).deep_symbolize_keys
@@ -40,15 +49,16 @@ class SandboxGrader < Grader
       end
       if entries["grading_script.json"].blank?
         add_error("No grading_script.json provided")
-      else
-        orca_url = Grader.orca_config['site_url'][Rails.env]
-        body, status_code = post_image_request_with_retry(
-          URI.parse("#{orca_url}/api/v1/validate_grading_script"),
-          entries["grading_script.json"]
-        )
-        unless body&.dig('errors').blank?
-          add_error("Grading script is ill-formed:\n#{body['errors'].join('\n')}")
-        end
+      # TODO: when the validation endpoint works, try this again.
+      # else
+      #   orca_url = Grader.orca_config['site_url'][Rails.env]
+      #   body, status_code = post_image_request_with_retry(
+      #     URI.parse("#{orca_url}/api/v1/validate_grading_script"),
+      #     JSON.parse(entries["grading_script.json"])
+      #   )
+      #   unless body&.dig('errors').blank?
+      #     add_error("Grading script is ill-formed:\n#{body['errors'].join('\n')}")
+      #   end
       end
     rescue Exception => e
       e_msg = e.to_s

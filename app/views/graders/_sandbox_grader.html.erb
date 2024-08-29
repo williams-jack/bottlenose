@@ -1,5 +1,6 @@
 <%= f.hidden_field :type, value: "SandboxGrader" %>
 <%= f.hidden_field :order %>
+<%= f.hidden_field :orca_status, value: true %>
 
 <table class="table no-first-row" style="margin-bottom: 0px;">
   <% if current_user.site_admin? %>
@@ -7,6 +8,18 @@
     <td class="col-sm-2"><%= f.label "avail_score", "Points available:" %></td>
     <td class="col-sm-4"><%= f.spinner "avail_score", f.object.avail_score || 50, :min => 0, :delta => 5 %></td>
     <td><%= f.check_box :extra_credit, data: {toggle: "toggle", on: "Extra credit", off: "Regular"} %></td>
+  </tr>
+  <tr class="form-group">
+    <td class="col-sm-2"><%= f.label "display_name", "Display name:" %></td>
+    <td class="col-sm-4"><%= f.text_field "display_name" %></td>
+    <td></td>
+  </tr>
+  <tr class="form-group">
+    <td class="col-sm-2"><%= f.label "response_type", "Response type:" %></td>
+    <td class="col-sm-4">
+      <%= f.select "response_type", options_for_select(SandboxGrader::RESPONSE_TYPES) %>
+    </td>
+    <td></td>
   </tr>
   <%= render "graders/grader_file_picker", f: f, id: f.object.id.to_s,
       label: "Grading file:", schema: "sandbox-schema" %>
