@@ -33,7 +33,7 @@ class FilesController < ApplicationController
 
   def get_file_disposition(file_ext)
     case file_ext
-    when ".jpg", ".jpeg", ".png", ".gif", ".tap", ".log", "json"
+    when ".jpg", ".jpeg", ".png", ".gif", ".tap", ".log", ".json"
       return "inline"
     when ".pdf"
       return nil
