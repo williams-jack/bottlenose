@@ -139,6 +139,7 @@ class SandboxGrader < Grader
                 label: 'general',
                 comment: t['output'],
                 weight: t['score'].to_f,
+                severity: InlineComment::severities["info"],
                 suppressed: false)
             end
             InlineComment.import ics
