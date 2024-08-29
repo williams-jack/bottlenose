@@ -84,7 +84,7 @@ class SandboxGrader < Grader
   end
 
     def postprocess_orca_response(grade, response)
-    Audit.log("In SandboxGrader(#{self.id}).postprocess_orca_response(#{grade.id}, #{response.inspect})"
+    Audit.log("In SandboxGrader(#{self.id}).postprocess_orca_response(#{grade.id}, #{response.inspect})")
     sub = grade.submission
     prefix = "Assignment #{assignment.id}, submission #{sub.id}"
     if response['errors'].present?
