@@ -70,14 +70,3 @@
 </div>
 <% end %>
 <% end %>
-
-<% if current_user.site_admin? && @grader.orca_status %>
-  <hr />
-  <h3>
-    Output from Orca:
-    <%= link_to Upload.upload_path_for(@grade.orca_result_path), class: "btn btn-default" do %>
-    <i class="glyphicon glyphicon-download-alt"></i> Download Orca grades
-    <% end %>
-  </h3>
-  <%= render 'orca_output' %>
-<% end %>
