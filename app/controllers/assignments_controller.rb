@@ -387,7 +387,7 @@ class AssignmentsController < ApplicationController
                                  :type, :id, :_destroy, :errors_to_show, :test_class, :test_timeout,
                                  :review_target, :review_count, :review_threshold,
                                  :upload_by_user_id, :order, :line_length, :extra_credit,
-                                 :removefile, :orca_status
+                                 :removefile, :orca_status, :display_name, :response_type
                                ]
                               )
   end
