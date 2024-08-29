@@ -150,13 +150,13 @@ class Upload < ApplicationRecord
     rec_path(extracted_path)
   end
 
-  def upload_entries
+  def upload_entries(with_contents: false)
     # This is similar to extracted_files, but operates on the raw submission file
     if @upload
       effective_mime = @metadata[:mimetype] || @upload.content_type
-      ArchiveUtils.entries(@upload.original_filename, effective_mime, from_stream: upload_data)
+      ArchiveUtils.entries(@upload.original_filename, effective_mime, from_stream: upload_data, with_contents: with_contents)
     else
-      ArchiveUtils.entries(submission_path.to_s, nil)
+      ArchiveUtils.entries(submission_path.to_s, nil, with_contents: with_contents)
     end
   end
   

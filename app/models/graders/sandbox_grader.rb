@@ -34,12 +34,21 @@ class SandboxGrader < Grader
     end
     return if upload.nil?
     begin
-      entries = self.upload.upload_entries
+      entries = self.upload.upload_entries(with_contents: true)
       if entries["Dockerfile"].blank?
         add_error("No Dockerfile provided")
       end
       if entries["grading_script.json"].blank?
         add_error("No grading_script.json provided")
+      else
+        orca_url = Grader.orca_config['site_url'][Rails.env]
+        body, status_code = post_image_request_with_retry(
+          URI.parse("#{orca_url}/api/v1/validate_grading_script"),
+          entries["grading_script.json"]
+        )
+        unless body&.dig('errors').blank?
+          add_error("Grading script is ill-formed:\n#{body['errors'].join('\n')}")
+        end
       end
     rescue Exception => e
       e_msg = e.to_s

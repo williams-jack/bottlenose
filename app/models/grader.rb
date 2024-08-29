@@ -262,6 +262,20 @@ class Grader < ApplicationRecord
     params_will_change! if line_length != value
     @line_length = value
   end
+  def display_name
+    @display_name
+  end
+  def display_name=(value)
+    params_will_change! if display_name != value
+    @display_name = value
+  end
+  def response_type
+    @response_type
+  end
+  def response_type=(value)
+    params_will_change! if response_type != value
+    @response_type = value
+  end
 
   # Needed to make the upload not be anonymous
   attr_accessor :upload_by_user_id

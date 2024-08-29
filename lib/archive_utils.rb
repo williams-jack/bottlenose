@@ -255,17 +255,17 @@ class ArchiveUtils
     end
   end
 
-  def self.entries(file, mime, from_stream: nil)
+  def self.entries(file, mime, from_stream: nil, with_contents: false)
     if is_zip?(file, mime)
-      zip_entries(file, from_stream)
+      zip_entries(file, from_stream, with_contents)
     elsif is_tar?(file, mime)
-      tar_entries(file, from_stream)
+      tar_entries(file, from_stream, with_contents)
     elsif is_tar_gz?(file, mime)
-      tar_gz_entries(file, from_stream)
+      tar_gz_entries(file, from_stream, with_contents)
     elsif is_gz?(file, mime)
-      [[File.basename(file, ".gz"), true]].to_h
+      [[File.basename(file, ".gz"), with_contents ? File.read(file) : true]].to_h
     else
-      [[file, true]].to_h
+      [[file, with_contents ? File.read(file) : true]].to_h
     end
   end
   
@@ -337,33 +337,33 @@ class ArchiveUtils
   ##############################
   # Entries
   ##############################
-  def self.zip_entries(file, stream)
+  def self.zip_entries(file, stream, with_contents)
     if stream
-      Zip::File.open_buffer(stream) do |zip| return helper_entries(file, 'zip', zip) end
+      Zip::File.open_buffer(stream) do |zip| return helper_entries(file, 'zip', zip, with_contents) end
     else
-      Zip::File.open(file) do |zip| return helper_entries(file, 'zip', zip) end
+      Zip::File.open(file) do |zip| return helper_entries(file, 'zip', zip, with_contents) end
     end
   end
-  def self.tar_entries(file, stream)
+  def self.tar_entries(file, stream, with_contents)
     stream =
       if stream then
         StringIO.new(stream)
       else
         File.open(file)
       end
-    Gem::Package::TarReader.new(stream) do |tar| return helper_entries(file, 'tar', tar) end
+    Gem::Package::TarReader.new(stream) do |tar| return helper_entries(file, 'tar', tar, with_contents) end
   end
-  def self.tar_gz_entries(file, stream)
+  def self.tar_gz_entries(file, stream, with_contents)
     stream =
       if stream then
         Zlib::GzipReader.new(StringIO.new(stream))
       else
         Zlib::GzipReader.open(file)
       end
-    Gem::Package::TarReader.new(stream) do |tar| return helper_entries(file, 'tgz', tar) end
+    Gem::Package::TarReader.new(stream) do |tar| return helper_entries(file, 'tgz', tar, with_contents) end
   end
 
-  def self.helper_entries(file, type, stream)
+  def self.helper_entries(file, type, stream, with_contents)
     output = {}
     stream.safe_each do |entry|
       out = encode_or_escape(File.join("/", entry.name.gsub("\\", "/").sub(/\/$/, "")))
@@ -382,7 +382,7 @@ class ArchiveUtils
         if entry.directory?
           temp[File.basename(out)] = {}
         else
-          temp[File.basename(out)] = true
+          temp[File.basename(out)] = with_contents ? entry.read : true
         end
       else
         puts "Problem with #{entry.name}"
