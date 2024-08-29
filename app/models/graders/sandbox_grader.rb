@@ -142,12 +142,12 @@ class SandboxGrader < Grader
           grade.save!
           InlineComment.transaction do
             InlineComment.where(submission: sub, grade: grade).destroy_all
-            ics = json['tests'].map do |t|
+            ics = json['tests'].map.with_index do |t, i|
               InlineComment.new(
                 submission: sub,
                 title: t['name'] || t['comment'] || '',
                 filename: Upload.upload_path_for(t['filename'] || sub.upload.extracted_path.to_s),
-                line: t['line'].to_i || 0,
+                line: t['line'].to_i || i,
                 grade: grade,
                 user: nil,
                 label: 'general',

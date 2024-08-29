@@ -35,38 +35,20 @@
 <% elsif @grading_output.kind_of?(String) %>
 <pre><%= @grading_output %></pre>
 <% else %>
+<% case @grader.response_type %>
+<% when 'xunit_tests' %>
+<%= render 'show_xunit_tests' %>
+<% when 'simple_list' %>
+<%= render 'show_simple_list' %>
+<% when 'plaintext' %>
+<pre><%= @grading_output %></pre>
+<% else %>
 <div id="tests">
-  <% @tests.each do |t| %>
-    <% if t[:passed] %>
-      <div class="alert alert-success">
-        <p>
-          <% if cur_reg_staff %>
-          <span class="pull-right">Weight: <%= t[:info]["weight"] || 1 %></span>
-          <% end %>
-          <b>Passed:</b> <%= t[:comment] %>
-        </p>
-      </div>
-    <% else %>
-      <div class="alert alert-danger">
-        <p>
-          <% if cur_reg_staff %>
-          <span class="pull-right">Weight: <%= t[:info]["weight"]  %></span>
-          <% end %>
-          <b>Failed:</b> <%= t[:info]["header"] %>
-        </p>
-        <% unless t[:info]["message"].to_s.empty? %>
-        <p>Message: <code class="text-muted"><%= t[:info]["message"] %></code></p>
-        <% end %>
-        <% if t[:info]["actual"] && t[:info]["expected"] %>
-        <%= render "actual_expected", :actual => t[:info]["actual"], :expected => t[:info]["expected"] %>
-        <% end %>
-        <% if t[:info]["stack"] %>
-        <p style="display: inline-block;">Stack:</p>
-        <pre><%= t[:info]["stack"].join("\n") %></pre>
-        <% end %>
-      </div>
+  <ul>
+    <% @tests.each do |t| %>
+    <li><pre><%= JSON.pretty_generate(t) %></pre></li>
     <% end %>
-  <% end %>  
+  </ul>
 </div>
 <% end %>
 

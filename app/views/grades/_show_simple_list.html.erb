@@ -1,0 +1,30 @@
+<div id="tests">
+  <% @tests.each_with_index do |t, i| %>
+    <% if ((t['score'].present? && (t['score'] == t['max_score'])) || t['passed'])
+         style = "alert-success"
+         message = "Passed"
+       elsif (t['score'].present? && t['max_score'].present? && t['score'] < t['max_score'] && t['score'] > 0)
+         style = "alert-warning"
+         message = "Partial pass"
+       else
+         style = "alert-danger"
+         message = "Test failed"
+       end %>
+    <div class="alert <%= style %>">
+      <p>
+        <% if cur_reg_staff %>
+        <span class="pull-right">Weight: <%= t['score'] || 1 %></span>
+        <% end %>
+        <b><%= message %>:</b> <%= t['name'] %>
+      </p>
+      <p><%= t['output'] %></p>
+      <% if t[:info]["actual"] && t[:info]["expected"] %>
+      <%= render "actual_expected", :actual => t[:info]["actual"], :expected => t[:info]["expected"] %>
+      <% end %>
+      <% if t[:info]["stack"] %>
+      <p style="display: inline-block;">Stack:</p>
+      <pre><%= t[:info]["stack"].join("\n") %></pre>
+      <% end %>
+    </div>
+  <% end %>  
+</div>
