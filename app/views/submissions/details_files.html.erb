@@ -90,6 +90,11 @@
   <% end %>
   </span>
   <% end %>
+  <% if current_user&.site_admin? &&  @grade.has_orca_output? %>
+  <%= link_to Upload.upload_path_for(@grade.orca_result_path), class: "btn btn-default" do %>
+    <i class="glyphicon glyphicon-download-alt"></i> Download Orca grades
+  <% end %>
+  <% end %>
 <% else %>
   <%= link_to details_course_assignment_submission_path(@course, @assignment, @submission, :format => :text),
       class: "btn btn-default" do %>
