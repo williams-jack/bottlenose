@@ -17,32 +17,35 @@
 <h3>
   <%= @grading_header %>
   <% if cur_reg_staff %>
-  <% if @grading_output.kind_of?(TapParser) %>
-  <%= link_to Upload.upload_path_for(@grade.grading_output), class: "btn btn-default" do %>
-    <i class="glyphicon glyphicon-download-alt"></i> Download raw test output
-  <% end %>
-  <%= link_to Upload.upload_path_for(@grade.full_log), class: "btn btn-default" do %>
-    <i class="glyphicon glyphicon-download-alt"></i> Download full log
-  <% end %>
+    <% if @grading_output.kind_of?(TapParser) %>
+      <%= link_to Upload.upload_path_for(@grade.grading_output), class: "btn btn-default" do %>
+          <i class="glyphicon glyphicon-download-alt"></i> Download raw test output
+      <% end %>
+      <%= link_to Upload.upload_path_for(@grade.full_log), class: "btn btn-default" do %>
+          <i class="glyphicon glyphicon-download-alt"></i> Download full log
+      <% end %>
 
-  <span class="pull-right">Total score:
-    <%= to_fixed(@grading_output.points_earned) %>&nbsp;/&nbsp;
-    <%= to_fixed(@grading_output.points_available)%>
-  </span>
-  <% else if @grader.response_type == 'simple_list' %>
-  <%= link_to Upload.upload_path_for(@grade.grading_output), class: "btn btn-default" do %>
-    <i class="glyphicon glyphicon-download-alt"></i> Download raw test output
-  <% end %>
-  <%= link_to Upload.upload_path_for(@grade.orca_result_path), class: "btn btn-default" do %>
-    <i class="glyphicon glyphicon-download-alt"></i> Download full log
-  <% end %>
+      <span class="pull-right">Total score:
+        <%= to_fixed(@grading_output.points_earned) %>&nbsp;/&nbsp;
+        <%= to_fixed(@grading_output.points_available)%>
+      </span>
+    <% elsif @grader.response_type == 'simple_list' %>
+      <%= link_to Upload.upload_path_for(@grade.grading_output), class: "btn btn-default" do %>
+          <i class="glyphicon glyphicon-download-alt"></i> Download raw test output
+      <% end %>
+      <%= link_to Upload.upload_path_for(@grade.orca_result_path), class: "btn btn-default" do %>
+          <i class="glyphicon glyphicon-download-alt"></i> Download full log
+      <% end %>
 
-  <span class="pull-right">Total score:
-    <%= to_fixed(@grading_output['score']) %>&nbsp;/&nbsp;
-    <%= to_fixed(@grading_output['max-score'])%>
-  </span>
-  
-  <% end %>
+      <span class="pull-right">Total score:
+        <% if @grading_output %>
+          <%= to_fixed(@grading_output['score']) %>&nbsp;/&nbsp;
+          <%= to_fixed(@grading_output['max-score'])%>
+        <% else %>
+          ??
+      </span>  <% end %>
+
+    <% end %>
   <% end %>
 </h3>
 <% if @grading_output.nil? %>
