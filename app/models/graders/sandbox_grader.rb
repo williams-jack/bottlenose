@@ -90,9 +90,9 @@ class SandboxGrader < Grader
     if response[:errors].present?
       grader_dir = grade.submission_grader_dir
       grader_dir.mkpath
-      File.open(grader_dir.join("output.json"), "w") do |output|
-        output.write(JSON.pretty_generate(response))
-        grade.grading_output_path = output.path
+      File.open(grader_dir.join("output.json"), "w") do |out|
+        out.write(JSON.pretty_generate(response))
+        grade.grading_output_path = out.path
         grade.save
       end
       Audit.log("#{prefix}: #{self.response_type} errors: #{response[:errors].inspect}")
@@ -122,9 +122,9 @@ class SandboxGrader < Grader
         output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path.to_s)
         grader_dir = grade.submission_grader_dir
         grader_dir.mkpath
-        File.open(grader_dir.join("output.json"), "w") do |output|
-          output.write(JSON.pretty_generate(JSON.parse(output)))
-          grade.grading_output_path = output.path
+        File.open(grader_dir.join("output.json"), "w") do |out|
+          out.write(JSON.pretty_generate(JSON.parse(output)))
+          grade.grading_output_path = out.path
           grade.save
         end
         case self.response_type
@@ -162,7 +162,7 @@ class SandboxGrader < Grader
           Audit.log("Not yet implemented: plaintext response for SandboxGrader(#{self.id}).postprocess_orca_response")
         end
       rescue Exception => e
-        Audit.log("#{prefix}: #{self.response_type} error: #{e}")
+        Audit.log("#{prefix}: #{self.response_type} error: #{e}\n#{e.backtrace.join('\n')}")
         record_compile_error(sub, grade)
       end
     end
