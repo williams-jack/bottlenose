@@ -1,3 +1,5 @@
+require 'audit'
+
 module Api
   class GradesController < ApiController
     skip_before_action :doorkeeper_authorize!
@@ -23,7 +25,11 @@ module Api
 
       FileUtils.rm(@grader.orca_secret_path(@grade))
       FileUtils.rm(@grader.orca_job_status_path(@grade))
-      @grader.postprocess_orca_response(@grade, response.except(:key))
+      begin
+        @grader.postprocess_orca_response(@grade, response.except(:key))
+      rescue Exception => e
+        Audit.log "Error postprocessing response for #{@grader.id}: #{e}\n#{e.backtrace.join('\n')}"
+      end
       head :ok
     end
 
