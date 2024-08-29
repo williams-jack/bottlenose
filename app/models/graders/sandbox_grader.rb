@@ -87,7 +87,7 @@ class SandboxGrader < Grader
     Audit.log("In SandboxGrader(#{self.id}).postprocess_orca_response(#{grade.id}, #{response.inspect})")
     sub = grade.submission
     prefix = "Assignment #{assignment.id}, submission #{sub.id}"
-    if response['errors'].present?
+    if response[:errors].present?
       grade.score = 0
       grade.out_of = self.avail_score
       grade.updated_at = DateTime.current
@@ -105,11 +105,11 @@ class SandboxGrader < Grader
           label: "general",
           severity: InlineComment::severities["error"],
           weight: self.avail_score,
-          comment: response['errors'].join('\n'),
+          comment: response[:errors].join('\n'),
           suppressed: false)
       end
     else
-      output = response['output']
+      output = response[:output]
       output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path)
       begin
         case self.response_type
