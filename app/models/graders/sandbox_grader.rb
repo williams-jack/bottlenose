@@ -168,13 +168,6 @@ class SandboxGrader < Grader
         Audit.log("#{prefix}: #{self.response_type} error: #{e}")
         record_compile_error(sub, grade)
       end
-      else
-        json = JSON.parse(output) rescue false
-        if json
-          grade.score = json['score']
-        else
-        end
-      end
     end
   end
   
