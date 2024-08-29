@@ -6,10 +6,11 @@ module Api
     before_action :find_grade
 
     def orca_response
-      puts "In GradesController(grade #{@grade.id}, grader #{@grader.id}).orca_response(#{params})\n"
+      config_details = "(grade #{@grade.id}, grader #{@grader.id})"
+      Audit.log "In GradesController#{config_details}.orca_response(#{params})\n"
       response_params = orca_response_params
       update_params = orca_job_status_update_params
-      puts "In GradesController: response_params.nil? #{response_params.nil?}, update_params.nil? #{update_params.nil?}"
+      puts "In GradesController#{config_details}: response_params.nil? #{response_params.nil?}, update_params.nil? #{update_params.nil?}"
       return head :bad_request if response_params.nil? && update_params.nil?
 
       secret = (response_params.nil? ? update_params : response_params)[:key]['secret']
@@ -21,6 +22,7 @@ module Api
     private
 
     def handle_response(response)
+      config_details = "(grade #{@grade.id}, grader #{@grader.id})"
       File.open(@grade.submission_grader_dir.join('result.json'), 'w') do |f|
         f.write(JSON.generate(response.except(:key)))
       end
@@ -30,8 +32,8 @@ module Api
       begin
         @grader.postprocess_orca_response(@grade, response.except(:key))
       rescue Exception => e
-        Audit.log "Error postprocessing response for #{@grader.id}: #{e}\n#{e.backtrace.join('\n')}\n"
-        Audit.log "Response was: #{response}\n"
+        Audit.log "In GradesController#{config_details}.orca_response: Error postprocessing response: #{e}\n#{e.backtrace.join('\n')}\n"
+        Audit.log "In GradesController#{config_details}.orca_response: Response was: #{response}\n"
       end
       head :ok
     end

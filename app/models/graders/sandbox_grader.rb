@@ -84,10 +84,11 @@ class SandboxGrader < Grader
   end
 
     def postprocess_orca_response(grade, response)
-    Audit.log("In SandboxGrader(#{self.id}).postprocess_orca_response(#{grade.id}, #{response.inspect})")
+    Audit.log("In SandboxGrader(#{self.id}).postprocess_orca_response(#{grade.id})")
     sub = grade.submission
-    prefix = "Assignment #{assignment.id}, submission #{sub.id}"
+    prefix = "(assn #{assignment.id}, sub #{submission.id}, grader #{self.id})"
     if response[:errors].present?
+      Audit.log("#{prefix}: #{self.response_type} errors: #{response[:errors].inspect}")
       grade.score = 0
       grade.out_of = self.avail_score
       grade.updated_at = DateTime.current
@@ -109,9 +110,9 @@ class SandboxGrader < Grader
           suppressed: false)
       end
     else
-      output = response[:output]
-      output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path.to_s)
       begin
+        output = response[:output]
+        output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path.to_s)
         case self.response_type
         when "inline_comments", "checker_tests", "xunit_tests", "examplar"
           tap = TapParser.new(output)
