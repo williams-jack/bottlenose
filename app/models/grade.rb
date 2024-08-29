@@ -40,6 +40,9 @@ class Grade < ApplicationRecord
 
   def can_compare_orca_tap?
     return false unless has_orca_output?
+    return false unless grading_output_path.ends_with? ".tap"
+    return false unless orca_output_path.ends_with? ".tap"
+    
     !(self.bottlenose_tap.nil? || orca_output['output'].nil?)
   end
 
@@ -93,7 +96,13 @@ class Grade < ApplicationRecord
 
   def orca_output
     return nil unless has_orca_output?
-    JSON.parse(File.open(orca_result_path).read)
+    if orca_result_path.ends_with? ".json"
+      JSON.parse(File.open(orca_result_path).read)
+    elsif orca_result_path.ends_with? ".tap"
+      TapParser.new(File.read(orca_result_path))
+    else
+      File.read(orca_result_path)
+    end
   end
 
   def orca_result_path
@@ -131,12 +140,12 @@ class Grade < ApplicationRecord
   def orca_tap
     return nil if orca_output.nil? || orca_output['output'].nil?
 
-    TapParser.new(orca_output['output'])
+    TapParser.new(orca_output['output']) rescue false
   end
 
   def bottlenose_tap
     return nil if self.grading_output.nil?
 
-    TapParser.new(File.read(self.grading_output_path))
+    TapParser.new(File.read(self.grading_output_path)) rescue false
   end
 end
