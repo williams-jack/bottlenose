@@ -23,6 +23,7 @@ module Api
 
       FileUtils.rm(@grader.orca_secret_path(@grade))
       FileUtils.rm(@grader.orca_job_status_path(@grade))
+      @grader.postprocess_orca_response(@grade, response.except(:key))
       head :ok
     end
 

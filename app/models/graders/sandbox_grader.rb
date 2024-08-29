@@ -86,7 +86,7 @@ class SandboxGrader < Grader
   protected
 
   def get_grading_script(sub)
-    build_script = JSON.load(File.open(self.upload.extracted_files["grading_script.json"].full_path))
+    JSON.load(File.open(self.upload.extracted_files.to_h {|v| [v[:path], v[:full_path]]}["grading_script.json"]))
   end
 
   def generate_files_hash(sub)
@@ -97,11 +97,85 @@ class SandboxGrader < Grader
         should_replace_paths: false
       },
       grader: {
-        submission: self.upload.url,
+        url: self.upload.url,
         mime_type: self.upload.read_metadata[:mimetype],
         should_replace_paths: false
       }
     }
+  end
+
+  def postprocess_orca_response(grade, response)
+    sub = grade.submission
+    prefix = "Assignment #{assignment.id}, submission #{sub.id}"
+    if response['errors'].present?
+      grade.score = 0
+      grade.out_of = self.avail_score
+      grade.updated_at = DateTime.current
+      grade.available = true
+      grade.save!
+      InlineComment.transaction do
+        InlineComment.where(submission: sub, grade: grade).destroy_all
+        InlineComment.create!(
+          submission: sub,
+          title: "Errors",
+          filename: Upload.upload_path_for(sub.upload.extracted_path.to_s),
+          line: 0,
+          grade: grade,
+          user: nil,
+          label: "general",
+          severity: InlineComment::severities["error"],
+          weight: self.avail_score,
+          comment: response['errors'].join('\n'),
+          suppressed: false)
+      end
+    else
+      output = response['output']
+      output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path)
+      begin
+        case self.response_type
+        when "inline_comments", "checker_tests", "xunit_tests", "examplar"
+          tap = TapParser.new(output)
+          Audit.log("#{prefix}: #{self.response_type} results: Tap: #{tap.points_earned}")
+          record_tap_as_comments(grade, tap, sub)
+        when "simple_list"
+          json = JSON.parse(output)
+          Audit.log("#{prefix}: #{self.response_type} results: Tap: #{json['score']} / #{json['max-score']}")
+          grade.score = json['score'].to_f
+          grade.out_of = json['max-score']&.to_f || self.avail_score
+          grade.updated_at = DateTime.current
+          grade.available = true
+          grade.save!
+          InlineComment.transaction do
+            InlincComment.where(submission: sub, grade: grade).destroy_all
+            ics = json['tests'].map do |t|
+              InlineComment.new(
+                submission: sub,
+                title: t['name'] || t['comment'] || '',
+                filename: Upload.upload_path_for(t['filename'] || sub.upload.extracted_path.to_s),
+                line: t['line'].to_i || 0,
+                grade: grade,
+                user: nil,
+                label: 'general',
+                comment: t['output'],
+                weight: t['score'].to_f,
+                suppressed: false)
+            end
+            InlineComment.import ics
+          end
+        when "plaintext"
+        end
+      rescue Exception => e
+        Audit.log("#{prefix}: #{self.response_type} error: #{e}")
+        record_compile_error(sub, grade)
+      end
+      else
+        json = JSON.parse(output) rescue false
+        if json
+          grade.score = json['score']
+        else
+        end
+      end
+    end
   end
   
   def do_grading(assignment, sub)
@@ -109,7 +183,7 @@ class SandboxGrader < Grader
   end
 
   def dockerfile_path
-    self.upload.extracted_files["Dockerfile"].full_path
+    self.upload.extracted_files.to_h {|v| [v[:path], v[:full_path]]}["Dockerfile"]
   end
 
   def dockerfile_sha_sum

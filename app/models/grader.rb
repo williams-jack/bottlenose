@@ -178,6 +178,9 @@ class Grader < ApplicationRecord
     end
   end
 
+  def postprocess_orca_response(grade, response)
+  end
+
   private
 
   def build_result_status(status)
