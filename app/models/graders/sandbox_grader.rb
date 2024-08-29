@@ -101,21 +101,6 @@ class SandboxGrader < Grader
       grade.updated_at = DateTime.current
       grade.available = true
       grade.save!
-      InlineComment.transaction do
-        InlineComment.where(submission: sub, grade: grade).destroy_all
-        InlineComment.create!(
-          submission: sub,
-          title: "Errors",
-          filename: Upload.upload_path_for(sub.upload.extracted_path.to_s),
-          line: 0,
-          grade: grade,
-          user: nil,
-          label: "general",
-          severity: InlineComment::severities["error"],
-          weight: self.avail_score,
-          comment: response[:errors].join('\n'),
-          suppressed: false)
-      end
     else
       begin
         output = response[:output]
@@ -140,24 +125,6 @@ class SandboxGrader < Grader
           grade.updated_at = DateTime.current
           grade.available = true
           grade.save!
-          InlineComment.transaction do
-            InlineComment.where(submission: sub, grade: grade).destroy_all
-            ics = json['tests'].map.with_index do |t, i|
-              InlineComment.new(
-                submission: sub,
-                title: t['name'] || t['comment'] || '',
-                filename: Upload.upload_path_for(t['filename'] || sub.upload.extracted_path.to_s),
-                line: t['line']&.to_i || (i + 1),
-                grade: grade,
-                user: nil,
-                label: 'general',
-                comment: t['output'],
-                weight: t['score'].to_f,
-                severity: InlineComment::severities["info"],
-                suppressed: false)
-            end
-            InlineComment.import ics
-          end
         when "plaintext"
           Audit.log("Not yet implemented: plaintext response for SandboxGrader(#{self.id}).postprocess_orca_response")
         end
