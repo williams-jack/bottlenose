@@ -991,7 +991,6 @@ HEADER
         @grading_header = "Errors running tests"
       else
         @grading_header = "All test results"
-        @tests = @grading_output.tests
       end
     else
       if @grading_output.nil?
@@ -1000,10 +999,9 @@ HEADER
         @grading_header = "Errors running tests"
       elsif @grading_output.passed_count == @grading_output.test_count
         @grading_header = "Test results"
-        @tests = @grading_output.tests
       else
         @grading_header = "Selected test results"
-        @tests = @grading_output.tests.reject{|t| t[:passed]}.shuffle!.take(3)
+        @tests = @tests.reject{|t| t[:passed]}.shuffle!.take(@grade.grader.errors_to_show || 3)
       end
     end
 
