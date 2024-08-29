@@ -18,12 +18,12 @@
         <b><%= message %>:</b> <%= t['name'] %>
       </p>
       <p><%= t['output'] %></p>
-      <% if t[:info]["actual"] && t[:info]["expected"] %>
-      <%= render "actual_expected", :actual => t[:info]["actual"], :expected => t[:info]["expected"] %>
+      <% if t.dig(:info, 'actual') && t.dig(:info, 'expected') %>
+      <%= render "actual_expected", :actual => t.dig(:info, 'actual'), :expected => t.dig(:info, 'expected') %>
       <% end %>
-      <% if t[:info]["stack"] %>
+      <% if t.dig(:info, 'stack') %>
       <p style="display: inline-block;">Stack:</p>
-      <pre><%= t[:info]["stack"].join("\n") %></pre>
+      <pre><%= t.dig(:info, 'stack').join("\n") %></pre>
       <% end %>
     </div>
   <% end %>  

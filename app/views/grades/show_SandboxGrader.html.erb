@@ -37,9 +37,9 @@
 <% else %>
 <% case @grader.response_type %>
 <% when 'xunit_tests' %>
-<%= render 'show_xunit_tests' %>
+<%= render 'show_xunit_tests', cur_reg_staff: cur_reg_staff, cur_reg: cur_reg %>
 <% when 'simple_list' %>
-<%= render 'show_simple_list' %>
+<%= render 'show_simple_list', cur_reg_staff: cur_reg_staff, cur_reg: cur_reg %>
 <% when 'plaintext' %>
 <pre><%= @grading_output %></pre>
 <% else %>
@@ -50,6 +50,7 @@
     <% end %>
   </ul>
 </div>
+<% end %>
 <% end %>
 
 <% if current_user.site_admin? && @grader.orca_status %>
