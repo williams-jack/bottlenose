@@ -976,7 +976,7 @@ HEADER
           @tests = []
         end
       when "simple_list"
-        @grading_output = JSON.parse(File.read(@grade.grading_output_path)
+        @grading_output = JSON.parse(File.read(@grade.grading_output_path))
         @tests = @grading_output['tests']
       when "plaintext"
         @grading_output = File.read(@grade.grading_output_path)
