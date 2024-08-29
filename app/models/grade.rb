@@ -97,7 +97,7 @@ class Grade < ApplicationRecord
   end
 
   def orca_result_path
-    File.join(submission.upload.grader_path(grader), 'result.json')
+    File.join(submission_grader_dir, 'result.json')
   end
 
   def orca_response_url

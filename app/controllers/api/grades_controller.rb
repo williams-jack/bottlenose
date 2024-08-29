@@ -23,7 +23,7 @@ module Api
 
     def handle_response(response)
       config_details = "(grade #{@grade.id}, grader #{@grader.id})"
-      File.open(@grade.submission_grader_dir.join('result.json'), 'w') do |f|
+      File.open(@grade.orca_result_path, 'w') do |f|
         f.write(JSON.generate(response.except(:key)))
       end
 

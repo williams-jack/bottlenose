@@ -83,11 +83,18 @@ class SandboxGrader < Grader
     end
   end
 
-    def postprocess_orca_response(grade, response)
+  def postprocess_orca_response(grade, response)
     Audit.log("In SandboxGrader(#{self.id}).postprocess_orca_response(#{grade.id})")
     sub = grade.submission
     prefix = "(assn #{assignment.id}, sub #{sub.id}, grader #{self.id})"
     if response[:errors].present?
+      grader_dir = grade.submission_grader_dir
+      grader_dir.mkpath
+      File.open(grader_dir.join("output.json"), "w") do |output|
+        output.write(JSON.pretty_generate(response))
+        grade.grading_output_path = output.path
+        grade.save
+      end
       Audit.log("#{prefix}: #{self.response_type} errors: #{response[:errors].inspect}")
       grade.score = 0
       grade.out_of = self.avail_score
@@ -113,6 +120,13 @@ class SandboxGrader < Grader
       begin
         output = response[:output]
         output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path.to_s)
+        grader_dir = grade.submission_grader_dir
+        grader_dir.mkpath
+        File.open(grader_dir.join("output.json"), "w") do |output|
+          output.write(JSON.pretty_generate(JSON.parse(output)))
+          grade.grading_output_path = output.path
+          grade.save
+        end
         case self.response_type
         when "inline_comments", "checker_tests", "xunit_tests", "examplar"
           tap = TapParser.new(output)

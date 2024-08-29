@@ -959,18 +959,27 @@ HEADER
     redirect_to details_course_assignment_submission_path(@course, @assignment, @submission)
   end
   def show_SandboxGrader
-    if @grade.grading_output
-      begin
-        @grading_output = File.read(@grade.grading_output_path)
+    if @grade.has_orca_output?
+      case @grader.response_type
+      when "inline_comments", "checker_tests", "xunit_tests", "examplar"
         begin
-          tap = TapParser.new(@grading_output)
-          @grading_output = tap
-          @tests = tap.tests
-        rescue Exception
+          @grading_output = File.read(@grade.orca_result_path)
+          begin
+            tap = TapParser.new(@grading_output)
+            @grading_output = tap
+            @tests = tap.tests
+          rescue Exception
+            @tests = []
+          end
+        rescue Errno::ENOENT
+          @grading_output = "Grading output file is missing or could not be read"
           @tests = []
         end
-      rescue Errno::ENOENT
-        @grading_output = "Grading output file is missing or could not be read"
+      when "simple_list"
+        @grading_output = JSON.parse(File.read(@grade.orca_result_path))
+        @tests = @grading_output[:output]['tests']
+      when "plaintext"
+        @grading_output = File.read(@grade.orca_result_path)
         @tests = []
       end
     end
