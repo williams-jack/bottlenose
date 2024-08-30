@@ -17,33 +17,42 @@
 <h3>
   <%= @grading_header %>
   <% if cur_reg_staff %>
-    <% if @grading_output.kind_of?(TapParser) %>
-      <%= link_to Upload.upload_path_for(@grade.grading_output), class: "btn btn-default" do %>
-          <i class="glyphicon glyphicon-download-alt"></i> Download raw test output
-      <% end %>
-      <%= link_to Upload.upload_path_for(@grade.full_log), class: "btn btn-default" do %>
-          <i class="glyphicon glyphicon-download-alt"></i> Download full log
-      <% end %>
-
-      <span class="pull-right">Total score:
-        <%= to_fixed(@grading_output.points_earned) %>&nbsp;/&nbsp;<%= to_fixed(@grading_output.points_available)%>
-      </span>
-    <% elsif @grader.response_type == 'simple_list' %>
-      <%= link_to Upload.upload_path_for(@grade.grading_output), class: "btn btn-default" do %>
-          <i class="glyphicon glyphicon-download-alt"></i> Download raw test output
-      <% end %>
-      <%= link_to Upload.upload_path_for(@grade.orca_result_path), class: "btn btn-default" do %>
-          <i class="glyphicon glyphicon-download-alt"></i> Download full log
-      <% end %>
-
-      <span class="pull-right">Total score:
-        <% if @grading_output %>
-          <%= to_fixed(@grading_output['score']) %>&nbsp;/&nbsp;<%= to_fixed(@grading_output['max-score'])%>
-        <% else %>
-          ??
-      </span>  <% end %>
-
+    <% if @grading_output.kind_of?(TapParser)
+         raw_test_output = @grade.grading_output
+         full_log = @grade.full_log
+         score = @grading_output.points_earned
+         max_score = @grading_output.points_available
+       else
+         raw_test_output = @grade.grading_output
+         full_log = @grade.orca_result_path
+         score = @grading_output['score']
+         max_score = @grading_output['max-score']
+       end
+    %>
+    <% if File.file?(full_log) %>
+    <div class="btn-group" style="white-space: nowrap;">
+      <%= link_to Upload.upload_path_for(raw_test_output), class: "btn btn-default" do %>
+        <i class="glyphicon glyphicon-download-alt"></i> Download raw output
+      <% end %><button type="button" class="btn btn-md btn-default dropdown-toggle"
+                       data-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+           <span class="caret"></span>
+           <span class="sr-only">Toggle Dropdown</span>
+      </button><% #
+      %><ul class="dropdown-menu">
+        <li><%= link_to "Download raw output", 
+                Upload.upload_path_for(raw_test_output),
+                class: "dropdown-item" %></li>
+        <li><%= link_to "Download full log", 
+                Upload.upload_path_for(full_log),
+                class: "dropdown-item" %></li>
+        <!-- <div class="dropdown-divider"></div> -->
+      </ul>
+    </div>
     <% end %>
+    <span class="pull-right">Total score:
+      <%= to_fixed(score) %>&nbsp;/&nbsp;<%= to_fixed(max_score) %>
+    </span>
   <% end %>
 </h3>
 <% if @grading_output.nil? %>

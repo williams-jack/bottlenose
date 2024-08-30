@@ -14,7 +14,14 @@
       <p>
         <% if cur_reg_staff %>
         <span class="pull-right">Points:
-          <%= to_fixed(t['score'] || 1) %>&nbsp;/&nbsp;<%= to_fixed(t['max-score'] || 1) %></span>        
+          <% if t['score'].present? && t['max_score'].present? %>
+            <%= to_fixed(t['score']) %>&nbsp;/&nbsp;<%= to_fixed(t['max_score']) %>
+          <% elsif t['score'].present? || t['weight'].present? %>
+            <%= to_fixed(t['score'] || t['weight']) %>
+          <% else %>
+            <%= to_fixed(1) %>
+          <% end %>
+        </span>
         <% end %>
         <b><%= message %>:</b> <%= t['name'] %>
       </p>
