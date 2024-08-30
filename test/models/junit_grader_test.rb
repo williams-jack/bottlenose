@@ -1,4 +1,3 @@
-require 'webmock/minitest'
 require 'test_helper'
 
 class JunitGraderTest < ActiveSupport::TestCase

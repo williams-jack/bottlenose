@@ -8,6 +8,7 @@ require 'backburner'
 require 'beaneater'
 require 'minitest/reporters'
 require 'fileutils'
+require 'webmock/minitest'
 
 SimpleCov.start
 Minitest::Reporters.use! [
