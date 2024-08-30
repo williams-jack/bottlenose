@@ -1,4 +1,5 @@
 require 'tap_parser'
+require 'json_parser'
 require 'audit'
 
 class GradesController < ApplicationController
@@ -976,8 +977,8 @@ HEADER
           @tests = []
         end
       when "simple_list"
-        @grading_output = JSON.parse(File.read(@grade.grading_output_path))
-        @tests = @grading_output['tests']
+        @grading_output = JsonParser.new(JSON.parse(File.read(@grade.grading_output_path)))
+        @tests = @grading_output.tests
       when "plaintext"
         @grading_output = File.read(@grade.grading_output_path)
         @tests = []
@@ -997,7 +998,7 @@ HEADER
         @grading_header = "No test output"
       elsif @grading_output.kind_of?(String)
         @grading_header = "Errors running tests"
-      elsif @grading_output.passed_count == @grading_output.test_count
+      elsif @grade.grader.errors_to_show.nil? || (@grading_output.passed_count == @grading_output.test_count)
         @grading_header = "Test results"
       else
         @grading_header = "Selected test results"

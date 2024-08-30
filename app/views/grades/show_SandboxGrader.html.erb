@@ -25,8 +25,8 @@
        else
          raw_test_output = @grade.grading_output
          full_log = @grade.orca_result_path
-         score = @grading_output['score']
-         max_score = @grading_output['max-score']
+         score = @grading_output.score
+         max_score = @grading_output.max_score
        end
     %>
     <% if File.file?(full_log) %>
