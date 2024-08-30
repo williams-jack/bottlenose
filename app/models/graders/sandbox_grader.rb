@@ -145,12 +145,12 @@ class SandboxGrader < Grader
     files = {
       submission: {
         url: sub.upload.url,
-        mime_type: sub.upload.read_metadata[:mimetype],
+        mime_type: guess_orca_mimetype(sub.upload),
         should_replace_paths: false
       },
       grader: {
         url: self.upload.url,
-        mime_type: self.upload.read_metadata[:mimetype],
+        mime_type: guess_orca_mimetype(self.upload),
         should_replace_paths: false
       }
     }

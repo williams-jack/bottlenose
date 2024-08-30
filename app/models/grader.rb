@@ -506,6 +506,22 @@ class Grader < ApplicationRecord
     put_job_json_with_retry!(URI.parse("#{orca_url}/api/v1/grading_queue"), job_json)
   end
 
+  def guess_orca_mimetype(upload)
+    declared_mime = upload.read_metadata[:mimetype]
+    upload_path = upload.submission_path.to_s
+    if ArchiveUtils.is_zip?(upload_path, declared_mime)
+      "application/zip"
+    elsif ArchiveUtils.is_tar?(upload_path, declared_mime)
+      "application/x-tar"
+    elsif ArchiveUtils.is_tar_gz?(upload_path, declared_mime)
+      "application/x-gtar"
+    elsif ArchiveUtils.is_gz?(upload_path, declared_mime)
+      "application/gzip"
+    else
+      declared_mime
+    end
+  end
+
   def generate_grading_job(sub, secret)
     grade = grade_for sub
     collation = if sub.team

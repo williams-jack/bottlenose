@@ -98,7 +98,7 @@ class RacketStyleGrader < Grader
     files = {
       submission: {
         url: sub.upload.url,
-        mime_type: sub.upload.read_metadata[:mimetype],
+        mime_type: guess_orca_mimetype(sub.upload),
         should_replace_paths: false
       }
     }
