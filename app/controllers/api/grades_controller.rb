@@ -21,8 +21,27 @@ module Api
 
     private
 
+    def cleanup(node, replace)
+      case node
+      when String
+        replace.each do |s, r|
+          node = node.gsub(s, r)
+        end
+      when Array
+        node.map { |item| cleanup(item, replace) }
+      when Hash
+        node.to_h { |k, v| [cleanup(k, replace), cleanup(v, replace)] }
+      else
+        node
+      end
+    end
+    
     def handle_response(response)
       config_details = "(grade #{@grade.id}, grader #{@grader.id})"
+      response = cleanup(response, {
+                           "$EXTRACTED/submission" => Upload.upload_path_for(@grade.upload.extracted_path.to_s)
+                         })
+      
       File.open(@grade.orca_result_path, 'w') do |f|
         f.write(JSON.generate(response.except(:key)))
       end

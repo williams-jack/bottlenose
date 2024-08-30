@@ -41,7 +41,7 @@ class Grade < ApplicationRecord
   def can_compare_orca_tap?
     return false unless has_orca_output?
     return false unless grading_output_path&.ends_with? ".tap"
-    return false unless orca_output_path&.ends_with? ".tap"
+    return false unless orca_result_path&.ends_with? ".tap"
     
     !(self.bottlenose_tap.nil? || orca_output['output'].nil?)
   end
