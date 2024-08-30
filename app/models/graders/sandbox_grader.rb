@@ -104,7 +104,7 @@ class SandboxGrader < Grader
     else
       begin
         output = response[:output]
-        output.gsub!("$EXTRACTED/submission", sub.upload.extracted_path.to_s)
+        output.gsub!("$EXTRACTED/submission", Upload.upload_path_for(sub.upload.extracted_path.to_s))
         grader_dir = grade.submission_grader_dir
         grader_dir.mkpath
         File.open(grader_dir.join("output.json"), "w") do |out|
