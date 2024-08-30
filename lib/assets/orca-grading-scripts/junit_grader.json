@@ -1,4 +1,6 @@
 [
+  { "cmd": ["find", "$EXTRACTED", "-name", ".DS_Store", "-exec", "rm", "{}", "\;"] },
+  { "cmd": ["find", "$EXTRACTED", "-name", "__MACOSX", "-type", "d", "-exec", "rm", "-rf", "{}", "\;"] },
   {
     "condition": {
       "predicate": "dir",

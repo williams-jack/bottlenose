@@ -1,4 +1,6 @@
 [
+  { "cmd": ["find", "$EXTRACTED", "-name", ".DS_Store", "-exec", "rm", "{}", "\;"] },
+  { "cmd": ["find", "$EXTRACTED", "-name", "__MACOSX", "-type", "d", "-exec", "rm", "-rf", "{}", "\;"] },
   { "condition": { "predicate": "file", "path": "$BUILD/checkstyle.rkt" },
     "on_true": [],
     "on_false": [ {"cmd": ["cp", "$EXTRACTED/checkstyle-rkt/checkstyle.rkt", "$BUILD/"] } ]
@@ -19,7 +21,7 @@
     "on_true": [],
     "on_false": [ {"cmd": ["cp", "$EXTRACTED/retab-rkt/retab.rkt", "$BUILD/"] } ]
   },
-  { "cmd": ["tree", "$EXTRACTED/.."] },
+  { "cmd": ["tree", "-a", "$EXTRACTED/.."] },
   {
     "cmd": [
        "env", "-u", "XDG_RUNTIME_DIR",
