@@ -27,6 +27,7 @@ module Api
         replace.each do |s, r|
           node = node.gsub(s, r)
         end
+        node
       when Array
         node.map { |item| cleanup(item, replace) }
       when Hash
@@ -38,9 +39,10 @@ module Api
     
     def handle_response(response)
       config_details = "(grade #{@grade.id}, grader #{@grader.id})"
-      response = cleanup(response, {
-                           "$EXTRACTED/submission" => Upload.upload_path_for(@grade.upload.extracted_path.to_s)
-                         })
+      replacements = {
+        "$EXTRACTED/submission" => Upload.upload_path_for(@grade.submission.upload.extracted_path.to_s)
+      } 
+      response = cleanup(response, replacements)
       
       File.open(@grade.orca_result_path, 'w') do |f|
         f.write(JSON.generate(response.except(:key)))
