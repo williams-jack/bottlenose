@@ -1,31 +1,34 @@
 <div id="tests">
   <% @tests.each_with_index do |t, i| %>
-    <% if ((t['score'].present? && (t['score'] == t['max_score'])) || t['passed'])
+    <% if t[:passed]
          style = "alert-success"
          message = "Passed"
-       elsif (t['score'].present? && t['max_score'].present? && t['score'] < t['max_score'] && t['score'] > 0)
+       elsif (t[:score] < t[:weight] && t[:score] > 0)
          style = "alert-warning"
          message = "Partial pass"
-       else
+       elsif t[:passed] == false
          style = "alert-danger"
          message = "Test failed"
+       else
+         style = "alert-info"
+         message = "Test"
        end %>
     <div class="alert <%= style %>">
       <p>
         <% if cur_reg_staff %>
         <span class="pull-right">Points:
-          <% if t['score'].present? && t['max_score'].present? %>
-            <%= to_fixed(t['score']) %>&nbsp;/&nbsp;<%= to_fixed(t['max_score']) %>
-          <% elsif t['score'].present? || t['weight'].present? %>
-            <%= to_fixed(t['score'] || t['weight']) %>
+          <% if t[:score].present? && t[:weight].present? %>
+            <%= to_fixed(t[:score]) %>&nbsp;/&nbsp;<%= to_fixed(t[:weight]) %>
+          <% elsif t[:score].present? || t[:weight].present? %>
+            <%= to_fixed(t[:score] || t[:weight]) %>
           <% else %>
             <%= to_fixed(1) %>
           <% end %>
         </span>
         <% end %>
-        <b><%= message %>:</b> <%= t['name'] %>
+        <b><%= message %>:</b> <%= t[:name] %>
       </p>
-      <p><%= t['output'] %></p>
+      <pre><%= t[:output] %></pre>
       <% if t.dig(:info, 'actual') && t.dig(:info, 'expected') %>
       <%= render "actual_expected", :actual => t.dig(:info, 'actual'), :expected => t.dig(:info, 'expected') %>
       <% end %>

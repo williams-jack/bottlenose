@@ -6,10 +6,29 @@ class JsonParser
   def initialize(json, filename=nil)
     @filename = filename
     @json = json
-    @tests = json['tests']
-    @test_count = @tests.count
-    @tests.each do |t|
-      t[:passed] = (t['score'] == t['max_score'])
+    @test_count = json['tests'].count
+    @tests = json['tests'].map.with_index do |t, num|
+      t = t.clone
+      weight = t.delete('weight') || t.delete('max_score') || t.delete('max-score')
+      score = t.delete('score')
+      passed = t.delete('passed')
+      if weight.nil? && passed.nil?
+        {
+          num: num,
+          score: t['score'].to_f,
+          **t.symbolize_keys
+        }
+      else
+        weight = weight.to_f if weight.present?
+        passed = (score == weight) if passed.nil?
+        {
+          num: num,
+          weight: weight,
+          passed: passed,
+          score: score,
+          **t.symbolize_keys
+        }
+      end
     end
     @passed_count = @tests.count { |t| t[:passed] }
     @score = @json['score']
