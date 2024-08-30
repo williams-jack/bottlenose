@@ -26,8 +26,7 @@
       <% end %>
 
       <span class="pull-right">Total score:
-        <%= to_fixed(@grading_output.points_earned) %>&nbsp;/&nbsp;
-        <%= to_fixed(@grading_output.points_available)%>
+        <%= to_fixed(@grading_output.points_earned) %>&nbsp;/&nbsp;<%= to_fixed(@grading_output.points_available)%>
       </span>
     <% elsif @grader.response_type == 'simple_list' %>
       <%= link_to Upload.upload_path_for(@grade.grading_output), class: "btn btn-default" do %>
@@ -39,8 +38,7 @@
 
       <span class="pull-right">Total score:
         <% if @grading_output %>
-          <%= to_fixed(@grading_output['score']) %>&nbsp;/&nbsp;
-          <%= to_fixed(@grading_output['max-score'])%>
+          <%= to_fixed(@grading_output['score']) %>&nbsp;/&nbsp;<%= to_fixed(@grading_output['max-score'])%>
         <% else %>
           ??
       </span>  <% end %>

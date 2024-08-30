@@ -43,8 +43,7 @@
   <% end %>
 
   <span class="pull-right">Total score:
-    <%= to_fixed(@grading_output.points_earned) %>&nbsp;/&nbsp;
-    <%= to_fixed(@grading_output.points_available)%>
+    <%= to_fixed(@grading_output.points_earned) %>&nbsp;/&nbsp;<%= to_fixed(@grading_output.points_available)%>
   </span>
   <% end %>
 </h3>

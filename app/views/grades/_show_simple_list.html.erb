@@ -13,7 +13,8 @@
     <div class="alert <%= style %>">
       <p>
         <% if cur_reg_staff %>
-        <span class="pull-right">Points: <%= t['score'] || 1 %></span>
+        <span class="pull-right">Points:
+          <%= to_fixed(t['score'] || 1) %>&nbsp;/&nbsp;<%= to_fixed(t['max-score'] || 1) %></span>        
         <% end %>
         <b><%= message %>:</b> <%= t['name'] %>
       </p>
