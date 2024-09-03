@@ -13,8 +13,12 @@
        scores = all_scores[:scores][i]
        update_time = all_grades[:grade_times][i]
        grade = grades&.find{|g| g.grader_id == gr.id}
-       if gr.orca_status && !grade.has_orca_output?
-        grades_to_get_status_for << { id: grade.id, job_status: gr.orca_job_status_for(grade) }
+       gradeStatusDomId = "orca-status-grade-#{grade&.id}"
+       if gr.orca_status && !grade&.has_orca_output?
+         grades_to_get_status_for << { 
+           gradeStatusDomId: gradeStatusDomId, 
+           job_status: gr.orca_job_status_for(grade)
+         }
        end
      %>
   <tr>
@@ -33,7 +37,7 @@
       <% if cur_reg_staff %>
         <% if grade.nil? %>
           Missing
-          <%= link_to "Create grader",
+          <%= link_to "Create grade",
               recreate_grade_course_assignment_submission_path(@course, @assignment, @submission, @gradesheet.graders[i]),
               method: 'post', class: "btn btn-warning" %>
         <% else %>
@@ -44,7 +48,7 @@
           <% if gr.orca_status %>
             <br/>
             <% orca_job_status = grade.has_orca_output? ? "Completed" : "" %>
-            Orca Status: <span id="<%= "orca-status-grade-#{grade.id}" %>" class=""><%= orca_job_status %></span>
+            Orca Status: <span id="<%= gradeStatusDomId %>" class=""><%= orca_job_status %></span>
           <% end %>
           <% if gr.autograde? %>
             <%= link_to "Rerun autograder",
