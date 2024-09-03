@@ -15,7 +15,7 @@
        end %>
     <div class="alert <%= style %>">
       <p>
-        <% if cur_reg_staff %>
+        <% if cur_reg_staff || @grade.available %>
         <span class="pull-right">Points:
           <% if t[:score].present? && t[:weight].present? %>
             <%= to_fixed(t[:score]) %>&nbsp;/&nbsp;<%= to_fixed(t[:weight]) %>

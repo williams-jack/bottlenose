@@ -16,19 +16,19 @@
 
 <h3>
   <%= @grading_header %>
+  <% if @grading_output.kind_of?(TapParser)
+       raw_test_output = @grade.grading_output
+       full_log = @grade.full_log
+       score = @grading_output.points_earned
+       max_score = @grading_output.points_available
+     else
+       raw_test_output = @grade.grading_output
+       full_log = @grade.orca_result_path
+       score = @grading_output&.score
+       max_score = @grading_output&.max_score
+     end
+  %>
   <% if cur_reg_staff %>
-    <% if @grading_output.kind_of?(TapParser)
-         raw_test_output = @grade.grading_output
-         full_log = @grade.full_log
-         score = @grading_output.points_earned
-         max_score = @grading_output.points_available
-       else
-         raw_test_output = @grade.grading_output
-         full_log = @grade.orca_result_path
-         score = @grading_output.score
-         max_score = @grading_output.max_score
-       end
-    %>
     <% if File.file?(full_log) %>
     <div class="btn-group" style="white-space: nowrap;">
       <%= link_to Upload.upload_path_for(raw_test_output), class: "btn btn-default" do %>
@@ -50,8 +50,10 @@
       </ul>
     </div>
     <% end %>
+  <% end %>
+  <% if cur_reg_staff || @grade.available %>  
     <span class="pull-right">Total score:
-      <%= to_fixed(score) %>&nbsp;/&nbsp;<%= to_fixed(max_score) %>
+      <%= score ? to_fixed(score) : '??' %>&nbsp;/&nbsp;<%= max_score ? to_fixed(max_score) : '??' %>
     </span>
   <% end %>
 </h3>
