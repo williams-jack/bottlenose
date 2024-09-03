@@ -406,11 +406,19 @@ class Grader < ApplicationRecord
       self.upload = nil
     end
     attrs.delete :removefile
-    if attrs[:orca_status]
-      self.orca_status = self.orca_status || {
+    if attrs[:orca_status].to_s == "true"
+      initial_orca_status = {
         current_build: {completed: false, successful: false, build_time: DateTime.now}
       }
+      if self.orca_status == false
+        self.orca_status = initial_orca_status
+      else
+        self.orca_status = self.orca_status || initial_orca_status
+      end
       attrs.delete :orca_status
+    elsif attrs[:orca_status].to_s == "false"
+      attrs.delete :orca_status
+      self.orca_status = false
     end
     self.upload_by_user_id = attrs[:upload_by_user_id]
     self.assignment = attrs[:assignment] if self.assignment.nil? && attrs[:assignment]
