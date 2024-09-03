@@ -484,12 +484,20 @@ class Grader < ApplicationRecord
 
   def handle_image_build_attempt(logs, successful)
     os = self.orca_status
-    os['current_build'] = {
+    new_current_build = {
       completed: true,
       successful: successful,
       logs: logs,
       build_time: DateTime.now
     }
+    if !os.dig('current_build', 'completed')
+      os['current_build'] = new_current_build
+    else
+      os = {
+        'current_build' => new_current_build,
+        'last_build' => os['current_build']
+      }
+    end
     self.update(orca_status: os)
   end
 
