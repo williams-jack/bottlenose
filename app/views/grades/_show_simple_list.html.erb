@@ -1,5 +1,5 @@
 <div id="tests">
-  <% if @tests.nil %>
+  <% if @tests.nil? %>
   <pre><%= @grading_output.output %></pre>
   <% else %>
   <% @tests.each_with_index do |t, i| %>

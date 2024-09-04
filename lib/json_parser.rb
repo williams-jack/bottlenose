@@ -8,7 +8,7 @@ class JsonParser
     @json = json
     @test_count = json['tests']&.count
     @output = json['output']
-    @tests = json['tests']&.map.with_index do |t, num|
+    @tests = json['tests']&.map&.with_index do |t, num|
       t = t.clone
       weight = t.delete('weight') || t.delete('max_score') || t.delete('max-score')
       score = t.delete('score')
