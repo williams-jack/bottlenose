@@ -1,4 +1,7 @@
 <div id="tests">
+  <% if @tests.nil %>
+  <pre><%= @grading_output.output %></pre>
+  <% else %>
   <% @tests.each_with_index do |t, i| %>
     <% if t[:passed]
          style = "alert-success"
@@ -37,5 +40,6 @@
       <pre><%= t.dig(:info, 'stack').join("\n") %></pre>
       <% end %>
     </div>
+  <% end %>  
   <% end %>  
 </div>
