@@ -74,6 +74,38 @@ class RequestRegTest < ActionDispatch::IntegrationTest
     assert new_section.students.include? @john
   end
 
+  test "cannot delete sections with registrations in it" do
+    @lately = create(:user, name: "Johnny Come Lately", first_name: "Johnny", last_name: "Lately")
+    assert_empty @lately.registrations
+    reg_req = @cs101.reg_requests.new(role: Registration::roles[:student], user: @lately, lecture_sections: @section.crn.to_s)
+    reg_req.save!
+    @lately.reload
+    assert_empty @lately.registrations
+    
+    assert_equal [@section], reg_req.sections
+    sign_in @fred
+    get user_path(@lately)
+    assert_response :success
+    @lately.reload
+    assert_empty @lately.registrations
+    assert_not_nil @lately.grouped_registrations
+    assert_equal 0, @lately.grouped_registrations["student"][:count]
+
+    delete accept_course_reg_request_path(@cs101, reg_req)
+    assert_response :redirect
+    follow_redirect!
+    assert_response :success
+    @lately.reload
+    assert_not_empty @lately.registrations
+    assert_not_nil @lately.grouped_registrations
+    assert_equal 1, @lately.grouped_registrations["student"][:count]
+
+    assert_raises(ActiveRecord::RecordNotDestroyed) { @section.destroy! }
+    assert_not @section.destroyed?
+    @lately.reload
+    assert_not_nil @lately.grouped_registrations
+  end
+  
   test "registration via staff page after adding section" do
     sign_in @fred
     new_section = Section.new(course: @cs101,

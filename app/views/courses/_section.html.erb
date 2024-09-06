@@ -15,6 +15,10 @@
     <%= f.select :type, Section.types.to_a.map{|t| [t[0].humanize, t[0]]} %>
   </td>
   <td>
+    <% if f.object.nonempty_section? %>
+    <button type="button" disabled title="<%= f.object.nonempty_section? %>" class="btn btn-danger">Remove</button>
+    <% else %>
     <%= link_to_remove_association "Remove", f, class: 'btn btn-danger' %>
+    <% end %>
   </td>
 </tr>
