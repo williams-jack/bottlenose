@@ -10,7 +10,6 @@ module Api
       Audit.log "In GradesController#{config_details}.orca_response(#{params})\n"
       response_params = orca_response_params
       update_params = orca_job_status_update_params
-      puts "In GradesController#{config_details}: response_params.nil? #{response_params.nil?}, update_params.nil? #{update_params.nil?}"
       return head :bad_request if response_params.nil? && update_params.nil?
 
       secret = (response_params.nil? ? update_params : response_params)[:key]['secret']
